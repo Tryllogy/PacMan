@@ -1,1 +1,59 @@
-Implementer PyGame = easy pour les collisions
+CONFING JSON : 
+It must take exactly one argument: a configuration file. The filename file does
+not matter, but the file must be a json file
+
+Any error (missing file, invalid value, missing key) must be handled cleanly with
+clear messages, NEVER with a Python traceback
+
+Unknown keys must be ignored
+
+
+LOGIC OF GAME :
+The first level is composed of a maze generated with a fixed seed (e.g., 42), then,
+each subsequent level is composed of a maze randomly generated.
+
+4 ghosts, one in each corner of the maze
+The player starts in the middle of the maze.
+Super-pacgums (power pellets) in the 4 corners of the maze.
+Pacgums
+
+
+PLAYING THE GAME :
+Starts with 3 lives.
+Respawns in the middle of the maze after losing a life.
+
+Wins the GAME when all LEVELS are completed.
+
+
+CHEAT MODE :
+Invincibility (no life lost; ghosts cannot eat the player).
+Level skip (immediately win the current level).
+
+
+PROGRAM LOGIC : 
+The game consists of multiple levels (at least 10).
+Each level has a time limit
+During the game, the player can pause and resume the game
+
+
+INTERFACE :
+• Main Menu:
+    ◦ Start Game - Allows the player to start a new game.
+    ◦ View Highscores - Displays the Top 10 scores with player names.
+    ◦ Instructions - Shows the game controls and rules.
+    ◦ Exit - Closes the game application.
+• In-Game HUD (always visible during gameplay):
+    ◦ Current score
+    ◦ Remaining lives
+    ◦ Current level
+    ◦ Remaining time for the level
+• Pause Menu:
+    ◦ Resume the game - Allows the player to return to the ongoing game.
+    ◦ Return to the main menu - Allows the player to exit the current game and go
+back to the main menu.
+• Game Over Screen:
+    ◦ Displays the final score.
+    ◦ Prompts the player to enter their name to save the score in the highscores list.
+• Victory Screen:
+    ◦ Displays the final score and a congratulatory message.
+    ◦ Prompts the player to enter their name to save the score in the highscores list.
