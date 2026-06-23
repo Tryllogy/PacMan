@@ -1,10 +1,36 @@
 from pathlib import Path
+from pydantic import BaseModel, Field, model_validator
 import json
+import os
 
 
 class ErrorParsing(Exception):
     def __init__(self, *args: str) -> None:
         super().__init__(*args)
+
+
+class Data(BaseModel):
+    model_config = {'extra': 'forbid'}
+
+    highscore_filename: Path  # "Score.json"
+    level: list  # []
+    width: int = Field(ge=5)  # 5
+    height: int = Field(ge=5)  # 5
+    lives: int = Field(ge=3)  # 3
+    pacgum: int = Field(ge=1)  # 42
+    points_per_pacgum: int = Field(ge=1)  # 10
+    points_per_super_pacgum: int = Field(ge=1)  # 50
+    points_per_ghost: int = Field(ge=1)  # 200
+    seed: int  # 42
+    level_max_time: int = Field(ge=1)  # 90
+
+    @model_validator(mode='after')
+    def filename_validator(self) -> 'Data':
+        directory = os.path.dirname(self.highscore_filename)
+        if not Path(directory).exists():
+            raise ErrorParsing(
+                f"highscore's directory doesnt exist: {directory}")
+        return self
 
 
 class Parser():
@@ -48,5 +74,7 @@ class Parser():
                 i += 1
         return json.loads(result)
 
-    def get_data(self) -> list:
-        return self.data
+    def get_data(self) -> Data:
+        data = Data.model_validate(self.data[0])
+        # data = Data(**self.data[0])
+        return data
