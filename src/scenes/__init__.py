@@ -4,6 +4,7 @@ from .main_menu import MainScene
 from .pause import PauseScene
 from .scene import Scene, GameState
 from .win import WinScene
+from .highscore import HighscoreScene
 
 __all__ = [
     "InGameScene",
@@ -12,5 +13,6 @@ __all__ = [
     "PauseScene",
     "Scene",
     "WinScene",
-    "GameState"
+    "GameState",
+    "HighscoreScene"
 ]

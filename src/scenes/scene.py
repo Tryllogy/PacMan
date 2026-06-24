@@ -9,6 +9,7 @@ class GameState(Enum):
     PAUSE: str = "pause"
     WIN: str = "win"
     LOSE: str = "lose"
+    HIGHSCORE: str = "highscore"
 
 
 class Scene(ABC):
@@ -29,14 +30,12 @@ class Scene(ABC):
         self.middle_screen = (width, height)
         return self.middle_screen
 
+    @abstractmethod
     def handle_events(
         self,
         events
     ) -> GameState:
-        for event in events:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                return GameState.GAME
-        return GameState.MAIN
+        pass
 
     def update(self) -> None:
         pass

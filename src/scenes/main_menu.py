@@ -1,43 +1,69 @@
-from .scene import Scene
-import pygame
+from .scene import Scene, GameState
+from ..button import Button
 from .. import constant
 
 
+PLAY_X = -150
+PLAY_Y = -100
+HIGHSCORE_X = -150
+HIGHSCORE_Y = -50
+INSTRUCTIONS_X = -150
+INSTRUCTIONS_Y = 0
+EXIT_X = -150
+EXIT_Y = 50
+
+
 class MainScene(Scene):
+    def __init__(
+        self,
+        screen
+    ) -> None:
+        super().__init__(screen)
+        mx, my = self.middle_screen
+
+        self.play_button: Button = Button(
+            mx - PLAY_X,
+            my - PLAY_Y,
+            constant.BUTTON_WIDTH,
+            constant.BUTTON_HEIGHT,
+            "Play",
+            self.start_game,
+            self.font
+        )
+
+        self.high_score_button: Button = Button(
+            mx - HIGHSCORE_X,
+            my - HIGHSCORE_Y,
+            constant.BUTTON_WIDTH,
+            constant.BUTTON_HEIGHT,
+            "View highscore",
+            self.view_highscore,
+            self.font
+        )
+
+    def view_highscore(
+        self
+    ) -> None:
+        global current_scene
+        current_scene = GameState.HIGHSCORE
+
+    def start_game(
+        self,
+    ) -> None:
+        global current_scene
+        current_scene = GameState.GAME
+
+    def handle_events(
+        self,
+        events
+    ) -> GameState:
+        for event in events:
+            self.play_button.handle_event(event)
+        return current_scene
 
     def draw(
         self,
         mouse_pos: tuple[int, int]
     ) -> None:
         super().draw(mouse_pos)
-        self.place_txt("Play", mouse_pos, -150, -100)
-        self.place_txt("View highscores", mouse_pos, -150, -50)
-        self.place_txt("Instructions", mouse_pos, -150, 0)
-        self.place_txt("Exit", mouse_pos, -150, 50)
-
-    def place_txt(
-        self,
-        txt_str: str,
-        mouse_pos: tuple[int, int],
-        off_x: int,
-        off_y: int,
-    ) -> None:
-        x, y = self.middle_screen
-        color: tuple[int, int, int] = constant.TEXT_COLOR_BASE
-        color_hover: tuple[int, int, int] = constant.TEXT_COLOR_HOVER
-
-        txt_render: pygame.Surface = self.font.render(
-            txt_str, True, color)
-        txt_dim: tuple[int, int] = (
-            txt_render.get_width(),
-            txt_render.get_height()
-        )
-        txt_pos: tuple[int, int] = (x + off_x, y + off_y)
-        if self.hover_text(
-            txt_dim,
-            mouse_pos,
-            txt_pos
-        ):
-            txt_render: pygame.Surface = self.font.render(
-                txt_str, True, color_hover)
-        self.screen.blit(txt_render, (x + off_x, y + off_y))
+        self.play_button.draw(self.screen)
