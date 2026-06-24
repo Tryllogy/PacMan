@@ -5,6 +5,7 @@ from .pause import PauseScene
 from .scene import Scene, GameState
 from .win import WinScene
 from .highscore import HighscoreScene
+from .instruction import InstructionsScene
 
 __all__ = [
     "InGameScene",
@@ -14,5 +15,6 @@ __all__ = [
     "Scene",
     "WinScene",
     "GameState",
-    "HighscoreScene"
+    "HighscoreScene",
+    "InstructionsScene"
 ]

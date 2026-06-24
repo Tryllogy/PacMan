@@ -10,6 +10,7 @@ class GameState(Enum):
     WIN: str = "win"
     LOSE: str = "lose"
     HIGHSCORE: str = "highscore"
+    INSTRUCTIONS: str = "instructions"
 
 
 class Scene(ABC):
@@ -17,7 +18,7 @@ class Scene(ABC):
             self,
             screen: pygame.Surface
     ):
-        self.font: pygame.font.Font = pygame.font.Font(None, 50)
+        self.font: pygame.font.Font = pygame.font.Font(None, 40)
         self.screen: pygame.Surface = screen
         self.get_middle_screen(screen)
 
@@ -43,7 +44,6 @@ class Scene(ABC):
     @abstractmethod
     def draw(
         self,
-        mouse_pos: tuple[int, int]
     ) -> None:
         self.screen.fill((0, 0, 0))
 

@@ -1,7 +1,8 @@
 from mazegenerator import MazeGenerator
 from .scenes import (
     GameState, Scene, MainScene,
-    WinScene, LoseScene, PauseScene, InGameScene
+    WinScene, LoseScene, PauseScene, InGameScene,
+    HighscoreScene, InstructionsScene
 )
 from . import constant
 import pygame
@@ -17,14 +18,16 @@ def main():
     maze_gen.generate()
     screen = pygame.display.set_mode(
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
-    scenes: dict[GameState, Scene] = {
-        GameState.MAIN: MainScene(screen),
-        GameState.GAME: InGameScene(screen),
-        GameState.PAUSE: PauseScene(screen),
-        GameState.WIN: WinScene(screen),
-        GameState.LOSE: LoseScene(screen),
+    scenes: dict[str, Scene] = {
+        GameState.MAIN.value: MainScene(screen),
+        GameState.GAME.value: InGameScene(screen),
+        GameState.PAUSE.value: PauseScene(screen),
+        GameState.WIN.value: WinScene(screen),
+        GameState.LOSE.value: LoseScene(screen),
+        GameState.HIGHSCORE.value: HighscoreScene(screen),
+        GameState.INSTRUCTIONS.value: InstructionsScene(screen),
     }
-    current_scene: GameState = GameState.MAIN
+    current_scene: str = GameState.MAIN.value
 
     pygame.display.toggle_fullscreen()
     clock = pygame.time.Clock()
@@ -44,7 +47,7 @@ def main():
         current_scene = next_scene
 
         scenes[current_scene].update()
-        scenes[current_scene].draw(pygame.mouse.get_pos())
+        scenes[current_scene].draw()
 
         pygame.display.flip()
         clock.tick(60)
@@ -53,7 +56,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # try:
-    main()
-    # except Exception as e:
-    #     print(e)
+    try:
+        main()
+    except Exception as e:
+        print(e)
