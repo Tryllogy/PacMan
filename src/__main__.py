@@ -37,7 +37,7 @@ def main() -> None:
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
     scenes: dict[str, Scene] = {
         GameState.MAIN.value: MainScene(screen),
-        GameState.GAME.value: InGameScene(screen),
+        GameState.GAME.value: InGameScene(screen, maze_gen),
         GameState.PAUSE.value: PauseScene(screen),
         GameState.WIN.value: WinScene(screen),
         GameState.LOSE.value: LoseScene(screen),

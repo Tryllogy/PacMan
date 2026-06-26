@@ -1,4 +1,4 @@
-from base_strategy import Strategy
+from .base_strategy import Strategy
 
 __all__ = [
     "Strategy"
