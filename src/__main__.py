@@ -7,14 +7,31 @@ from .scenes import (
 from . import constant
 import pygame
 import sys
+from .parsing.parser import Parser, Data
+from pathlib import Path
+from pydantic import ValidationError
 
 
-def main():
+def main() -> None:
+    if len(sys.argv) == 1:
+        print("Missing args")
+        sys.exit(1)
+    elif len(sys.argv) > 2:
+        print("Too many args")
+        sys.exit(1)
+    try:
+        parser = Parser(Path(sys.argv[1]))
+        config: Data = parser.get_data()
+    except ValidationError as e:
+        for error in e.errors():
+            print(f'Value: {error["loc"][0]} -> {error["msg"]}')
+        sys.exit(1)
+    except Exception as e:
+        print(e)
+        sys.exit(1)
+
     pygame.init()
-    config = {
-        "size": (15, 15),
-    }
-    maze_gen: MazeGenerator = MazeGenerator(**config)
+    maze_gen: MazeGenerator = MazeGenerator((config.width, config.height))
     maze_gen.generate()
     screen = pygame.display.set_mode(
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
