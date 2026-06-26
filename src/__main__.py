@@ -13,6 +13,7 @@ def main() -> None:
     try:
         parser = Parser(Path(sys.argv[1]))
         data = parser.get_data()
+        print(data.width)
     except Exception as e:
         print(e)
 

@@ -10,22 +10,27 @@ class ErrorParsing(Exception):
 
 
 class Data(BaseModel):
-    model_config = {'extra': 'forbid'}
+    # model_config = {'extra': 'forbid'}
 
-    highscore_filename: Path  # "Score.json"
+    highscore_filename: str = 'score.json'  # "Score.json"
     level: list  # []
-    width: int = Field(ge=5)  # 5
-    height: int = Field(ge=5)  # 5
-    lives: int = Field(ge=3)  # 3
-    pacgum: int = Field(ge=1)  # 42
-    points_per_pacgum: int = Field(ge=1)  # 10
-    points_per_super_pacgum: int = Field(ge=1)  # 50
-    points_per_ghost: int = Field(ge=1)  # 200
-    seed: int  # 42
-    level_max_time: int = Field(ge=1)  # 90
+    width: int = Field(ge=5, default=5)  # 5
+    height: int = Field(ge=5, default=5)  # 5
+    lives: int = Field(ge=3, default=3)  # 3
+    pacgum: int = Field(ge=1 default=42)  # 42
+    points_per_pacgum: int = Field(ge=1, default=10)  # 10
+    points_per_super_pacgum: int = Field(ge=1, default=50)  # 50
+    points_per_ghost: int = Field(ge=1, default=200)  # 200
+    seed: int = 42 # 42
+    level_max_time: int = Field(ge=1, default = 90)  # 90
 
     @model_validator(mode='after')
     def filename_validator(self) -> 'Data':
+        if not self.highscore_filename.endswith('.json'):
+            raise ErrorParsing(
+                'highscore filename is not a json file: '
+                f'{self.highscore_filename}'
+            )
         directory = os.path.dirname(self.highscore_filename)
         if not Path(directory).exists():
             raise ErrorParsing(
