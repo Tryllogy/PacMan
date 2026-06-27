@@ -1,5 +1,9 @@
 from collections import deque
 
+class Case():
+    def __init__(self, pos: tuple[int, int], wall_dist: int):
+        self.pos = pos
+        self.wall_dist = wall_dist
 
 class PathFinder():
     def __init__(self,
