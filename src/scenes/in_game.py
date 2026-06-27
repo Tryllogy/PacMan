@@ -45,18 +45,6 @@ class InGameScene(Scene):
                 print("PAUSE")
         return self.current_scene
 
-    def get_offset(
-        self
-    ) -> None:
-        maze_size_px: tuple[int, int] = (
-            len(self.maze_gen.maze) * constant.WALL_HEIGHT,
-            len(self.maze_gen.maze[0]) * constant.WALL_HEIGHT)
-        offset: tuple[int, int] = (
-            self.middle_screen[0] - maze_size_px[0] / 2,
-            self.middle_screen[1] - maze_size_px[1] / 2
-        )
-        return offset
-
     def draw(
         self,
     ) -> None:
@@ -69,6 +57,23 @@ class InGameScene(Scene):
             super_pacgum.draw(self.screen)
         for phantom in self.phantoms:
             phantom.draw(self.screen)
+
+    def get_offset(
+        self
+    ) -> None:
+        self.maze_size_px: tuple[int, int] = (
+            len(self.maze_gen.maze) * constant.WALL_HEIGHT,
+            len(self.maze_gen.maze[0]) * constant.WALL_HEIGHT)
+        offset: tuple[int, int] = (
+            self.middle_screen[0] - self.maze_size_px[0] / 2,
+            self.middle_screen[1] - self.maze_size_px[1] / 2
+        )
+        return offset
+
+    def make_player(
+        self
+    ) -> None:
+        pass
 
     def make_pacgum(
         self
@@ -94,11 +99,101 @@ class InGameScene(Scene):
 
     def make_phantom(self):
         offset_phantom: int = constant.WALL_WIDTH
+        mx, my = self.maze_size_px
+        mx -= constant.WALL_HEIGHT
+        my -= constant.WALL_HEIGHT
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             0 + self.offset[1] + offset_phantom,
             AggressiveStrategy(),
             "purple",
+        ))
+        self.phantoms.append(Phantom(
+            mx + self.offset[0] + offset_phantom,
+            0 + self.offset[1] + offset_phantom,
+            AggressiveStrategy(),
+            "green",
+        ))
+        self.phantoms.append(Phantom(
+            0 + self.offset[0] + offset_phantom,
+            my + self.offset[1] + offset_phantom,
+            AggressiveStrategy(),
+            "blue",
+        ))
+        self.phantoms.append(Phantom(
+            my + self.offset[0] + offset_phantom,
+            mx + self.offset[1] + offset_phantom,
+            AggressiveStrategy(),
+            "red",
+        ))
+
+    def make_wall(
+        self
+    ) -> None:
+        for y, line in enumerate(self.maze_gen.maze):
+            for x, value in enumerate(line):
+                pos: tuple[int, int] = (x, y)
+                if value >> 3 & 1:
+                    self.make_wall_west(pos)
+                if value >> 2 & 1:
+                    self.make_wall_south(pos)
+                if value >> 1 & 1:
+                    self.make_wall_east(pos)
+                if value & 1:
+                    self.make_wall_north(pos)
+
+    def make_wall_north(
+        self,
+        pos: tuple[int, int],
+    ) -> None:
+        pos_x: int = pos[0] * constant.WALL_HEIGHT
+        pos_y: int = pos[1] * constant.WALL_HEIGHT
+        self.walls.append(Wall(
+            self.offset[0] + pos_x,
+            self.offset[1] + pos_y,
+            constant.WALL_HEIGHT,
+            constant.WALL_WIDTH,
+        ))
+
+    def make_wall_south(
+        self,
+        pos: tuple[int, int]
+    ) -> None:
+        offset: int = constant.WALL_HEIGHT
+        pos_x: int = pos[0] * constant.WALL_HEIGHT
+        pos_y: int = pos[1] * constant.WALL_HEIGHT + offset
+        self.walls.append(Wall(
+            self.offset[0] + pos_x,
+            self.offset[1] + pos_y,
+            constant.WALL_HEIGHT,
+            constant.WALL_WIDTH,
+        ))
+
+    def make_wall_east(
+        self,
+        pos: tuple[int, int]
+    ) -> None:
+        offset: int = constant.WALL_HEIGHT
+        pos_x: int = pos[0] * constant.WALL_HEIGHT + offset
+        pos_y: int = pos[1] * constant.WALL_HEIGHT
+        self.walls.append(Wall(
+            self.offset[0] + pos_x,
+            self.offset[1] + pos_y,
+            constant.WALL_WIDTH,
+            constant.WALL_HEIGHT + constant.WALL_WIDTH,
+        ))
+
+    def make_wall_west(
+        self,
+        pos: tuple[int, int]
+    ) -> None:
+        pos_x: int = pos[0] * constant.WALL_HEIGHT
+        pos_y: int = pos[1] * constant.WALL_HEIGHT
+        self.walls.append(Wall(
+            self.offset[0] + pos_x,
+            self.offset[1] + pos_y,
+            constant.WALL_WIDTH,
+            constant.WALL_HEIGHT,
         ))
 
     def is_corner(
@@ -116,72 +211,3 @@ class InGameScene(Scene):
                 x == len(self.maze_gen.maze) - 1):
             return True
         return False
-
-    def make_wall(
-        self
-    ) -> None:
-        for y, line in enumerate(self.maze_gen.maze):
-            for x, value in enumerate(line):
-                pos: tuple[int, int] = (x, y)
-                if value >> 3 & 1:
-                    self.draw_west(pos)
-                if value >> 2 & 1:
-                    self.draw_south(pos)
-                if value >> 1 & 1:
-                    self.draw_east(pos)
-                if value & 1:
-                    self.draw_north(pos)
-
-    def draw_north(
-        self,
-        pos: tuple[int, int],
-    ) -> None:
-        pos_x: int = pos[0] * constant.WALL_HEIGHT
-        pos_y: int = pos[1] * constant.WALL_HEIGHT
-        self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
-            constant.WALL_HEIGHT,
-            constant.WALL_WIDTH,
-        ))
-
-    def draw_south(
-        self,
-        pos: tuple[int, int]
-    ) -> None:
-        offset: int = constant.WALL_HEIGHT
-        pos_x: int = pos[0] * constant.WALL_HEIGHT
-        pos_y: int = pos[1] * constant.WALL_HEIGHT + offset
-        self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
-            constant.WALL_HEIGHT,
-            constant.WALL_WIDTH,
-        ))
-
-    def draw_east(
-        self,
-        pos: tuple[int, int]
-    ) -> None:
-        offset: int = constant.WALL_HEIGHT
-        pos_x: int = pos[0] * constant.WALL_HEIGHT + offset
-        pos_y: int = pos[1] * constant.WALL_HEIGHT
-        self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
-            constant.WALL_WIDTH,
-            constant.WALL_HEIGHT + constant.WALL_WIDTH,
-        ))
-
-    def draw_west(
-        self,
-        pos: tuple[int, int]
-    ) -> None:
-        pos_x: int = pos[0] * constant.WALL_HEIGHT
-        pos_y: int = pos[1] * constant.WALL_HEIGHT
-        self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
-            constant.WALL_WIDTH,
-            constant.WALL_HEIGHT,
-        ))
