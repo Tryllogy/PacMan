@@ -12,8 +12,8 @@ class ErrorParsing(Exception):
 class Data(BaseModel):
     highscore_filename: str = 'score.json'  # "Score.json"
     level: list  # []
-    width: int = Field(ge=5, default=5)  # 5 / 5
-    height: int = Field(ge=5, default=5)  # 5 / 5
+    width: int = Field(ge=10, default=10)  # 10 / 10
+    height: int = Field(ge=10, default=10)  # 10 / 10
     lives: int = Field(ge=3, default=3)  # 3 / 3
     pacgum: int = Field(ge=1, default=42)  # 1 / 42
     points_per_pacgum: int = Field(ge=1, default=10)  # 1 / 10

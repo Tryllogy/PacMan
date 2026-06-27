@@ -1,8 +1,10 @@
 from mazegenerator import MazeGenerator
 from .scene import Scene, GameState
+from ..strategies import AggressiveStrategy
 from ..phantom import Phantom
 from ..player import Player
-from ..wall import Wall
+from .wall import Wall
+from .pacgum import Pacgum, SuperPacgum
 from .. import constant
 from enum import Enum
 import pygame
@@ -26,10 +28,22 @@ class InGameScene(Scene):
         self.maze_gen: MazeGenerator = maze_gen
         self.phantoms: list[Phantom] = []
         self.player: Player = None
-        self.cheat_invicible: bool = False
         self.offset: tuple[int, int] = self.get_offset()
         self.walls: list[Wall] = []
+        self.pacgums: list[Pacgum] = []
+        self.super_pacgums: list[SuperPacgum] = []
         self.make_wall()
+        self.make_pacgum()
+        self.make_phantom()
+
+    def handle_events(
+        self,
+        events
+    ) -> str:
+        for event in events:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                print("PAUSE")
+        return self.current_scene
 
     def get_offset(
         self
@@ -43,21 +57,65 @@ class InGameScene(Scene):
         )
         return offset
 
-    def handle_events(
-        self,
-        events
-    ) -> str:
-        for event in events:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                print("PAUSE")
-        return self.current_scene
-
     def draw(
         self,
     ) -> None:
         super().draw()
         for wall in self.walls:
             wall.draw(self.screen)
+        for pacgum in self.pacgums:
+            pacgum.draw(self.screen)
+        for super_pacgum in self.super_pacgums:
+            super_pacgum.draw(self.screen)
+        for phantom in self.phantoms:
+            phantom.draw(self.screen)
+
+    def make_pacgum(
+        self
+    ) -> None:
+        offset_pacgum: int = constant.WALL_HEIGHT / 2 + constant.WALL_WIDTH / 2
+        for y, line in enumerate(self.maze_gen.maze):
+            for x, value in enumerate(line):
+                if value == 15:
+                    continue
+
+                pos_x: int = x * constant.WALL_HEIGHT
+                pos_y: int = y * constant.WALL_HEIGHT
+                if self.is_corner(x, y):
+                    self.super_pacgums.append(SuperPacgum(
+                        pos_x + self.offset[0] + offset_pacgum,
+                        pos_y + self.offset[1] + offset_pacgum
+                    ))
+                else:
+                    self.pacgums.append(Pacgum(
+                        pos_x + self.offset[0] + offset_pacgum,
+                        pos_y + self.offset[1] + offset_pacgum
+                    ))
+
+    def make_phantom(self):
+        offset_phantom: int = constant.WALL_WIDTH
+        self.phantoms.append(Phantom(
+            0 + self.offset[0] + offset_phantom,
+            0 + self.offset[1] + offset_phantom,
+            AggressiveStrategy(),
+            "purple",
+        ))
+
+    def is_corner(
+        self,
+        x: int,
+        y: int
+    ) -> bool:
+        if y == 0 and x == 0:
+            return True
+        if y == len(self.maze_gen.maze[0]) - 1 and x == 0:
+            return True
+        if y == 0 and x == len(self.maze_gen.maze) - 1:
+            return True
+        if (y == len(self.maze_gen.maze[0]) - 1 and
+                x == len(self.maze_gen.maze) - 1):
+            return True
+        return False
 
     def make_wall(
         self

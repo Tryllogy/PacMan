@@ -1,5 +1,5 @@
 import pygame
-from .. import constant
+from ... import constant
 
 color = tuple[int, int, int]
 

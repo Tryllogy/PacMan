@@ -1,5 +1,5 @@
 from .scene import Scene, GameState
-from ..button import Button
+from .button import Button
 from .. import constant
 
 
