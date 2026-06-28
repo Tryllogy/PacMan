@@ -66,14 +66,23 @@ def main() -> None:
         scenes[current_scene].update()
         scenes[current_scene].draw()
 
+        reset_all_scenes(scenes)
         pygame.display.flip()
         clock.tick(60)
 
     pygame.quit()
 
 
+def reset_all_scenes(
+    scenes: dict[str, Scene]
+) -> None:
+    for k, scene in scenes.items():
+        scene.current_scene = scene.base_scene
+
+
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(e)
+    # try:
+    #     main()
+    # except Exception as e:
+    #     print(e)
+    main()

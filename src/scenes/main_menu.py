@@ -20,6 +20,7 @@ class MainScene(Scene):
     ) -> None:
         super().__init__(screen)
         self.current_scene = GameState.MAIN.value
+        self.base_scene = self.current_scene
         mx, my = self.middle_screen
 
         self.play_button: Button = Button(

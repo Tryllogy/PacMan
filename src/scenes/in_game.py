@@ -25,6 +25,7 @@ class InGameScene(Scene):
     ) -> None:
         super().__init__(screen)
         self.current_scene = GameState.GAME.value
+        self.base_scene = self.current_scene
         self.maze_gen: MazeGenerator = maze_gen
         self.phantoms: list[Phantom] = []
         self.player: Player = None
