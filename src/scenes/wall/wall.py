@@ -14,6 +14,12 @@ class Wall:
         self.y: int = y
         self.width: int = width
         self.height: int = height
+        self.rect: pygame.Rect = pygame.Rect(
+            self.x,
+            self.y,
+            self.width,
+            self.height
+        )
 
     def draw(
         self,
@@ -22,10 +28,5 @@ class Wall:
         pygame.draw.rect(
             screen,
             constant.WALL_COLOR,
-            pygame.Rect(
-                self.x,
-                self.y,
-                self.width,
-                self.height,
-             ),
+            self.rect,
         )

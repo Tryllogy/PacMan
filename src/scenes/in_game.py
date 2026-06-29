@@ -1,8 +1,7 @@
 from mazegenerator import MazeGenerator
 from .scene import Scene, GameState
 from ..strategies import AggressiveStrategy
-from ..phantom import Phantom
-from ..player import Player
+from ..entity import Phantom, Player, Direction
 from .wall import Wall
 from .pacgum import Pacgum, SuperPacgum
 from .. import constant
@@ -38,6 +37,13 @@ class InGameScene(Scene):
         self.make_phantom()
         self.make_player()
 
+    def update(
+        self
+    ) -> None:
+        # for phantom in self.phantoms:
+        #     phantom.move()
+        self.player.update(self.walls, self.pacgums, self.super_pacgums)
+
     def handle_events(
         self,
         events
@@ -45,6 +51,14 @@ class InGameScene(Scene):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 print("PAUSE")
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                self.player.direction = Direction.UP
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                self.player.direction = Direction.DOWN
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+                self.player.direction = Direction.LEFT
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+                self.player.direction = Direction.RIGHT
         return self.current_scene
 
     def draw(

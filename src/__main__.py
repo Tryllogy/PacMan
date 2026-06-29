@@ -35,6 +35,7 @@ def main() -> None:
     maze_gen.generate()
     screen = pygame.display.set_mode(
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
+    pygame.display.set_caption("PacMan")
     scenes: dict[str, Scene] = {
         GameState.MAIN.value: MainScene(screen),
         GameState.GAME.value: InGameScene(screen, maze_gen),
@@ -58,7 +59,7 @@ def main() -> None:
                (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE)
                for event in events):
             pygame.quit()
-            sys.exit()
+            sys.exit(0)
 
         next_scene = scenes[current_scene].handle_events(events)
         current_scene = next_scene
@@ -71,6 +72,7 @@ def main() -> None:
         clock.tick(60)
 
     pygame.quit()
+    sys.exit(0)
 
 
 def reset_all_scenes(
