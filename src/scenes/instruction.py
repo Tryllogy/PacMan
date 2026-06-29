@@ -10,13 +10,13 @@ class InstructionsScene(Scene):
         self.base_scene = self.current_scene
         x, y = self.middle_screen
         self.back_button: Button = Button(
-            x,
-            y,
+            x - 150,
+            y + 300,
             constant.BUTTON_WIDTH,
             constant.BUTTON_HEIGHT,
             "Back",
             self.back_main,
-            self.font,
+            self.font
         )
 
     def back_main(
