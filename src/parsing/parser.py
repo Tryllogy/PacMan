@@ -11,7 +11,6 @@ class ErrorParsing(Exception):
 
 class Data(BaseModel):
     highscore_filename: str = 'score.json'  # "Score.json"
-    level: list  # []
     width: int = Field(ge=10, default=10)  # 10 / 10
     height: int = Field(ge=10, default=10)  # 10 / 10
     lives: int = Field(ge=3, default=3)  # 3 / 3
@@ -33,6 +32,14 @@ class Data(BaseModel):
         if not Path(directory).exists():
             raise ErrorParsing(
                 f"highscore's directory doesnt exist: {directory}")
+        if not os.access(self.highscore_filename, os.R_OK):
+            raise ErrorParsing(
+                f"permission denied (read) {self.highscore_filename}"
+            )
+        if not os.access(self.highscore_filename, os.W_OK):
+            raise ErrorParsing(
+                f"permission denied (write) {self.highscore_filename}"
+            )
         return self
 
 
