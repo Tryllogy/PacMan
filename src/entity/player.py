@@ -8,14 +8,27 @@ class Player(Entity):
     def __init__(
         self,
         x: int,
-        y: int
+        y: int,
+        origin_x: int,
+        origin_y: int,
+        points_per_pacgum: int = 1,
+        points_per_superpacgum: int = 5,
+        points_per_ghost: int = 10
     ) -> None:
         super().__init__(x, y)
-        self.sprites: list[pygame.Surface] = self.get_sprites()
+        self.origin_x: int = origin_x
+        self.origin_y: int = origin_y
+        self.points_per_pacgum: int = points_per_pacgum
+        self.points_per_superpacgum: int = points_per_superpacgum
+        self.points_per_ghost: int = points_per_ghost
+        self.points: int = 0
+        self.sprite_dimensions: list[int, int] = []
         self.sprite_index: int = 0
+        self.sprites: list[pygame.Surface] = self.get_sprites()
         self.current_sprite: pygame.Surface = self.sprites[self.sprite_index]
         self.direction: Direction = Direction.RIGHT
-        self.points: int = 0
+        self.next_direction: Direction = self.direction
+        self.hitbox: pygame.Rect
 
     def draw(
         self,
@@ -46,6 +59,7 @@ class Player(Entity):
                     sprites[-1],
                     (constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5,
                      constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5))
+                self.sprite_dimensions.append(sprites[-1].get_size())
         return sprites
 
     def check_collision(
@@ -54,16 +68,26 @@ class Player(Entity):
         y: int,
         entities: list[pygame.Rect]
     ) -> bool:
-        player_rect: pygame.Rect = pygame.Rect(
-            x,
-            y,
-            constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5,
-            constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5
-        )
+        self.update_hitbox(x, y)
         for entity in entities:
-            if player_rect.colliderect(entity):
+            if self.hitbox.colliderect(entity.rect):
                 return True
         return False
+
+    def can_move(
+        self,
+        walls: list[pygame.Rect],
+        direction: Direction
+    ) -> bool:
+        dx, dy = {
+            Direction.UP: (0, -constant.PLAYER_SPEED),
+            Direction.DOWN: (0, constant.PLAYER_SPEED),
+            Direction.LEFT: (-constant.PLAYER_SPEED, 0),
+            Direction.RIGHT: (constant.PLAYER_SPEED, 0)
+        }[direction]
+        new_x:  int = self.x + dx * 2
+        new_y:  int = self.y + dy * 2
+        return not self.check_collision(new_x, new_y, walls)
 
     def update(
         self,
@@ -71,22 +95,39 @@ class Player(Entity):
         pacgums: list[pygame.Rect] = [],
         super_pacgums: list[pygame.Rect] = []
     ) -> None:
-        match self.direction:
-            case Direction.UP:
-                if not self.check_collision(
-                        self.x, self.y - constant.PLAYER_SPEED, walls):
-                    self.y -= constant.PLAYER_SPEED
-            case Direction.DOWN:
-                if not self.check_collision(
-                        self.x, self.y + constant.PLAYER_SPEED, walls):
-                    self.y += constant.PLAYER_SPEED
-            case Direction.LEFT:
-                if not self.check_collision(
-                        self.x - constant.PLAYER_SPEED, self.y, walls):
-                    self.x -= constant.PLAYER_SPEED
-            case Direction.RIGHT:
-                if not self.check_collision(
-                        self.x + constant.PLAYER_SPEED, self.y, walls):
-                    self.x += constant.PLAYER_SPEED
+        self.update_hitbox(self.x, self.y)
+        if self.is_aligned() and self.can_move(walls, self.next_direction):
+            self.direction = self.next_direction
+            self.update_sprite()
+        if self.can_move(walls, self.direction):
+            dx, dy = {
+                Direction.UP: (0, -constant.PLAYER_SPEED),
+                Direction.DOWN: (0, constant.PLAYER_SPEED),
+                Direction.LEFT: (-constant.PLAYER_SPEED, 0),
+                Direction.RIGHT: (constant.PLAYER_SPEED, 0)
+            }[self.direction]
+            self.x += dx
+            self.y += dy
         if self.check_collision(self.x, self.y, pacgums):
-            print("Pacgum collected!")
+            self.points += self.points_per_pacgum
+        if self.check_collision(self.x, self.y, super_pacgums):
+            self.points += self.points_per_superpacgum
+
+    def update_sprite(
+        self
+    ) -> None:
+        self.sprite_index += 1
+        if self.sprite_index >= len(self.sprites):
+            self.sprite_index = 0
+
+    def update_hitbox(
+        self,
+        x: int,
+        y: int
+    ) -> None:
+        self.hitbox: pygame.Rect = pygame.Rect(
+            x,
+            y,
+            self.sprite_dimensions[self.sprite_index][0],
+            self.sprite_dimensions[self.sprite_index][1]
+        )

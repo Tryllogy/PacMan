@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from enum import Enum
 import pygame
+from .. import constant
 
 
 class Direction(Enum):
@@ -34,3 +35,11 @@ class Entity(ABC):
         screen: pygame.Surface
     ) -> None:
         pass
+
+    def is_aligned(
+            self,
+    ) -> bool:
+        return (
+            (self.x - self.origin_x) % constant.WALL_HEIGHT == 0 and
+            (self.y - self.origin_y) % constant.WALL_HEIGHT == 0
+        )

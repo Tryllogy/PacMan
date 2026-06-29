@@ -1,9 +1,8 @@
 from mazegenerator import MazeGenerator
 from .scene import Scene, GameState
 from ..strategies import AggressiveStrategy
-from ..entity import Phantom, Player, Direction
-from .wall import Wall
-from .pacgum import Pacgum, SuperPacgum
+from ..entity import (Phantom, Player, Direction,
+                      Wall, Pacgum, SuperPacgum)
 from .. import constant
 from enum import Enum
 import pygame
@@ -20,9 +19,15 @@ class InGameScene(Scene):
     def __init__(
         self,
         screen: pygame.Surface,
-        maze_gen: MazeGenerator
+        maze_gen: MazeGenerator,
+        points_per_pacgum: int = 1,
+        points_per_superpacgum: int = 5,
+        points_per_ghost: int = 10
     ) -> None:
         super().__init__(screen)
+        self.points_per_pacgum: int = points_per_pacgum
+        self.points_per_superpacgum: int = points_per_superpacgum
+        self.points_per_ghost: int = points_per_ghost
         self.current_scene = GameState.GAME.value
         self.base_scene = self.current_scene
         self.maze_gen: MazeGenerator = maze_gen
@@ -52,13 +57,13 @@ class InGameScene(Scene):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 print("PAUSE")
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                self.player.direction = Direction.UP
+                self.player.next_direction = Direction.UP
             if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                self.player.direction = Direction.DOWN
+                self.player.next_direction = Direction.DOWN
             if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
-                self.player.direction = Direction.LEFT
+                self.player.next_direction = Direction.LEFT
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
-                self.player.direction = Direction.RIGHT
+                self.player.next_direction = Direction.RIGHT
         return self.current_scene
 
     def draw(
@@ -87,18 +92,36 @@ class InGameScene(Scene):
         )
         return offset
 
+    def find_open_middle_maze(
+        self
+    ) -> tuple[int, int]:
+        middle_maze_x: int = len(self.maze_gen.maze) // 2 - 1
+        middle_maze_y: int = len(self.maze_gen.maze[0]) // 2 - 1
+        while self.maze_gen.maze[middle_maze_x][middle_maze_y] == 15:
+            middle_maze_x += 1
+            if middle_maze_x >= len(self.maze_gen.maze):
+                middle_maze_x = 0
+                middle_maze_y += 1
+                if middle_maze_y >= len(self.maze_gen.maze[0]):
+                    raise ValueError("No open space in the maze")
+        return (middle_maze_x, middle_maze_y)
+
     def make_player(
         self
     ) -> None:
-        middle_maze_x: int = (len(self.maze_gen.maze) // 2) - 1
-        middle_maze_y: int = (len(self.maze_gen.maze[0]) // 2) - 1
+        middle_maze_x, middle_maze_y = self.find_open_middle_maze()
         offset_player: int = constant.WALL_WIDTH * 1.3
 
         pox_x: int = middle_maze_x * constant.WALL_HEIGHT
         pox_y: int = middle_maze_y * constant.WALL_HEIGHT
         self.player = Player(
             self.offset[0] + offset_player + pox_x,
-            self.offset[1] + offset_player + pox_y
+            self.offset[1] + offset_player + pox_y,
+            self.offset[0] + offset_player,
+            self.offset[1] + offset_player,
+            points_per_pacgum=self.points_per_pacgum,
+            points_per_superpacgum=self.points_per_superpacgum,
+            points_per_ghost=self.points_per_ghost
         )
 
     def make_pacgum(
@@ -177,7 +200,7 @@ class InGameScene(Scene):
         self.walls.append(Wall(
             self.offset[0] + pos_x,
             self.offset[1] + pos_y,
-            constant.WALL_HEIGHT,
+            constant.WALL_HEIGHT + constant.WALL_WIDTH,
             constant.WALL_WIDTH,
         ))
 
@@ -191,7 +214,7 @@ class InGameScene(Scene):
         self.walls.append(Wall(
             self.offset[0] + pos_x,
             self.offset[1] + pos_y,
-            constant.WALL_HEIGHT,
+            constant.WALL_HEIGHT + constant.WALL_WIDTH,
             constant.WALL_WIDTH,
         ))
 
@@ -219,7 +242,7 @@ class InGameScene(Scene):
             self.offset[0] + pos_x,
             self.offset[1] + pos_y,
             constant.WALL_WIDTH,
-            constant.WALL_HEIGHT,
+            constant.WALL_HEIGHT + constant.WALL_WIDTH,
         ))
 
     def is_corner(
