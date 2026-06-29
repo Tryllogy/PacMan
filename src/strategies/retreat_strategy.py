@@ -1,5 +1,5 @@
-from base_strategy import Strategy
-from utils import reverse, get_adj
+from .base_strategy import Strategy
+from .utils import reverse, get_adj
 from collections import deque
 
 

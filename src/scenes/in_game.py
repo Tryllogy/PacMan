@@ -131,25 +131,25 @@ class InGameScene(Scene):
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             0 + self.offset[1] + offset_phantom,
-            AggressiveStrategy(),
+            AggressiveStrategy(self.maze_gen.maze),
             "purple",
         ))
         self.phantoms.append(Phantom(
             mx + self.offset[0] + offset_phantom,
             0 + self.offset[1] + offset_phantom,
-            AggressiveStrategy(),
+            AggressiveStrategy(self.maze_gen.maze),
             "green",
         ))
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             my + self.offset[1] + offset_phantom,
-            AggressiveStrategy(),
+            AggressiveStrategy(self.maze_gen.maze),
             "blue",
         ))
         self.phantoms.append(Phantom(
             my + self.offset[0] + offset_phantom,
             mx + self.offset[1] + offset_phantom,
-            AggressiveStrategy(),
+            AggressiveStrategy(self.maze_gen.maze),
             "red",
         ))
 
