@@ -49,7 +49,6 @@ def main() -> None:
     pygame.display.toggle_fullscreen()
     clock = pygame.time.Clock()
     running = True
-
     while running:
         events = pygame.event.get()
         screen.fill((0, 0, 0))
