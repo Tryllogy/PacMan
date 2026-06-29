@@ -51,6 +51,7 @@ class InGameScene(Scene):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
                 print("PAUSE")
+                self.current_scene = GameState.PAUSE.value
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 self.player.direction = Direction.UP
             if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
