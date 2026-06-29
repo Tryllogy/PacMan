@@ -29,6 +29,10 @@ class Phantom:
     ):
         self.x: int = x
         self.y: int = y
+        self.spawn_x: int = x
+        self.spawn_y: int = y
+        if not isinstance(strategy, Strategy):
+            raise TypeError(f"Not a valid strategy: {strategy}")
         if color not in PhantomColor.ALL_COLORS.value:
             raise ValueError("Phantom is not a color that is supported")
         self.strategy: Strategy = strategy
@@ -60,8 +64,8 @@ class Phantom:
                     pygame.image.load(os.path.join(sprite_dir, sprite)))
                 sprites[-1] = pygame.transform.scale(
                     sprites[-1],
-                    (constant.WALL_HEIGHT - constant.WALL_WIDTH,
-                     constant.WALL_HEIGHT - constant.WALL_WIDTH))
+                    (constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5,
+                     constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5))
         return sprites
 
     def draw(

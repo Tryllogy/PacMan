@@ -36,6 +36,7 @@ class InGameScene(Scene):
         self.make_wall()
         self.make_pacgum()
         self.make_phantom()
+        self.make_player()
 
     def handle_events(
         self,
@@ -58,6 +59,7 @@ class InGameScene(Scene):
             super_pacgum.draw(self.screen)
         for phantom in self.phantoms:
             phantom.draw(self.screen)
+        self.player.draw(self.screen)
 
     def get_offset(
         self
@@ -74,7 +76,16 @@ class InGameScene(Scene):
     def make_player(
         self
     ) -> None:
-        pass
+        middle_maze_x: int = (len(self.maze_gen.maze) // 2) - 1
+        middle_maze_y: int = (len(self.maze_gen.maze[0]) // 2) - 1
+        offset_player: int = constant.WALL_WIDTH * 1.3
+
+        pox_x: int = middle_maze_x * constant.WALL_HEIGHT
+        pox_y: int = middle_maze_y * constant.WALL_HEIGHT
+        self.player = Player(
+            self.offset[0] + offset_player + pox_x,
+            self.offset[1] + offset_player + pox_y
+        )
 
     def make_pacgum(
         self
@@ -99,7 +110,7 @@ class InGameScene(Scene):
                     ))
 
     def make_phantom(self):
-        offset_phantom: int = constant.WALL_WIDTH
+        offset_phantom: int = constant.WALL_WIDTH * 1.3
         mx, my = self.maze_size_px
         mx -= constant.WALL_HEIGHT
         my -= constant.WALL_HEIGHT
