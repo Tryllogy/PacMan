@@ -9,7 +9,13 @@ class Pacgum:
         y: int
     ):
         self.x: int = x
-        self.y = y
+        self.y: int = y
+        self.rect: pygame.Rect = pygame.Rect(
+            self.x - constant.PACGUM_SIZE // 2,
+            self.y - constant.PACGUM_SIZE // 2,
+            constant.PACGUM_SIZE,
+            constant.PACGUM_SIZE
+        )
 
     def draw(
         self,
@@ -18,6 +24,6 @@ class Pacgum:
         pygame.draw.circle(
             screen,
             constant.PACGUM_COLOR,
-            (self.x, self.y),
-            constant.PACGUM_SIZE
+            self.rect.center,
+            self.rect.width // 2
         )

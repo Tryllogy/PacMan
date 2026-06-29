@@ -9,7 +9,13 @@ class SuperPacgum:
         y: int
     ):
         self.x: int = x
-        self.y = y
+        self.y: int = y
+        self.rect: pygame.Rect = pygame.Rect(
+            self.x - constant.SUPERPACGUM_SIZE // 2,
+            self.y - constant.SUPERPACGUM_SIZE // 2,
+            constant.SUPERPACGUM_SIZE,
+            constant.SUPERPACGUM_SIZE
+        )
 
     def draw(
         self,
@@ -18,6 +24,6 @@ class SuperPacgum:
         pygame.draw.circle(
             screen,
             constant.SUPERPACGUM_COLOR,
-            (self.x, self.y),
-            constant.SUPERPACGUM_SIZE
+            self.rect.center,
+            self.rect.width // 2
         )
