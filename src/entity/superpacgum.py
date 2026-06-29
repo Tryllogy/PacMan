@@ -1,8 +1,8 @@
 import pygame
-from ... import constant
+from .. import constant
 
 
-class Pacgum:
+class SuperPacgum:
     def __init__(
         self,
         x: int,
@@ -11,10 +11,10 @@ class Pacgum:
         self.x: int = x
         self.y: int = y
         self.rect: pygame.Rect = pygame.Rect(
-            self.x - constant.PACGUM_SIZE // 2,
-            self.y - constant.PACGUM_SIZE // 2,
-            constant.PACGUM_SIZE,
-            constant.PACGUM_SIZE
+            self.x - constant.SUPERPACGUM_SIZE // 2,
+            self.y - constant.SUPERPACGUM_SIZE // 2,
+            constant.SUPERPACGUM_SIZE,
+            constant.SUPERPACGUM_SIZE
         )
 
     def draw(
@@ -23,7 +23,7 @@ class Pacgum:
     ):
         pygame.draw.circle(
             screen,
-            constant.PACGUM_COLOR,
+            constant.SUPERPACGUM_COLOR,
             self.rect.center,
             self.rect.width // 2
         )
