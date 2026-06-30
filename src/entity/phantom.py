@@ -1,6 +1,7 @@
 from ..strategies import Strategy
 from .entity import Entity, Direction
 from enum import Enum
+from typing import Generator
 import os
 import pygame
 from .. import constant
@@ -27,6 +28,9 @@ class Phantom(Entity):
             y: int,
             strategy: Strategy,
             color: str,
+            self_maze_pos: tuple[int, int],
+            ppc: tuple[int, int],
+            offset: tuple[int, int]
     ):
         super().__init__(x, y)
         if not isinstance(strategy, Strategy):
@@ -39,6 +43,15 @@ class Phantom(Entity):
         self.sprite_index: int = 0
         self.current_sprite: pygame.Surface = self.sprites[self.sprite_index]
         self.direction: Direction = Direction.RIGHT
+        self.self_maze_pos: tuple[int, int] = self_maze_pos
+        self.ppc: tuple[int, int] = ppc
+        self.offset: tuple[int, int] = offset
+        # self.ppc_w: int = ppc_w
+        # self.ppc_h: int = ppc_h
+        self.path: list[tuple[int, int]] = []
+
+    def update_player_pos(self, pos: tuple[int, int]) -> None:
+        self.player_maze_pos = pos
 
     def change_strategy(
             self,
@@ -48,9 +61,39 @@ class Phantom(Entity):
             raise TypeError(f"Not a valid strategy: {strategy}")
         self.strategy = strategy
 
+    def gen_move(
+            self,
+            path: list[tuple[int, int]]
+            ) -> Generator[tuple[int, int], None, None]:
+        for pos in path:
+            yield pos
+        return None
+
+    def update_path(self) -> None:
+        print('phantom.py selfmazepos', self.self_maze_pos)
+        self.path = self.strategy.get_path(self.self_maze_pos, self.player_maze_pos)
+        self.movements = self.gen_move(self.path)
+
+    def update_hitbox(
+            self,
+            x: int,
+            y: int
+            ) -> None:
+        w, h = self.current_sprite.get_size()
+        self.hitbox: pygame.Rect = pygame.Rect(
+            x,
+            y,
+            w,
+            h
+        )
+
     # Base on strategy it will move differently from other phantoms
     def move(self):
-        pass
+        case_x, case_y = next(self.movements)
+        pxl_x = case_x * ppc_x + offset_w
+        pxl_y = case_y * ppc_y + offset_h
+        tmp_x = 
+        self.update_hitbox(self.y, self.x)  # convert x, y in pxl from screen. self.movements give position in maze case x, y
 
     def get_sprites(
         self
@@ -88,6 +131,8 @@ class Phantom(Entity):
             self.sprite_index = 3
 
     def update(
-        self
+        self,
+        player_pos
     ) -> None:
-        pass
+        self.update_player_pos(player_pos)
+        self.update_path()

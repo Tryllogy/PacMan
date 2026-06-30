@@ -29,16 +29,16 @@ class RetreatStrategy(Strategy):
 
     def get_path(
             self,
-            player: tuple[int, int],
-            current: tuple[int, int]
+            self_pos: tuple[int, int],
+            player_pos: tuple[int, int]
             ) -> list[tuple[int, int]]:
         width = len(self.map_grid)
         heigh = len(self.map_grid[0])
-        x, y = player
+        x, y = player_pos
         visited = [[False] * heigh for i in range(width)]
         visited[x][y] = True
         q = deque()
-        q.append(player)
+        q.append(player_pos)
         result = []
         parents = {}
 
@@ -52,7 +52,7 @@ class RetreatStrategy(Strategy):
                     parents.update({adj: curr})
                     visited[x][y] = True
                     q.append(adj)
-        result = self.build_rev_path(current, parents)
+        result = self.build_rev_path(self_pos, parents)
         return result
 
     # Will go away as far as possible from the player
