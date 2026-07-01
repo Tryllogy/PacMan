@@ -45,7 +45,7 @@ class InGameScene(Scene):
 
     def update(
         self
-    ) -> None:
+    ) -> str:
 
         for phantom in self.phantoms:
             # player_pos = (self.player.x, self.player.y)  #  x, y from the whole screen in pxl not the maze_size in pxl
@@ -72,6 +72,12 @@ class InGameScene(Scene):
             phantom.move()
         self.player.update(self.walls, self.pacgums, self.super_pacgums,
                            self.phantoms)
+
+        if self.player.lives <= 0:
+            self.current_scene = GameState.LOSE.value
+        if len(self.pacgums) == 0 and len(self.super_pacgums) == 0:
+            self.current_scene = GameState.WIN.value
+        return self.current_scene
 
     def handle_events(
         self,

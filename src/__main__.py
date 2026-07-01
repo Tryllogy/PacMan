@@ -64,7 +64,8 @@ def main() -> None:
         next_scene = scenes[current_scene].handle_events(events)
         current_scene = next_scene
 
-        scenes[current_scene].update()
+        next_scene = scenes[current_scene].update()
+        current_scene = next_scene
         scenes[current_scene].draw()
 
         reset_all_scenes(scenes)

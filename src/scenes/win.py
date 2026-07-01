@@ -14,3 +14,8 @@ class WinScene(Scene):
         self,
     ):
         super().draw()
+
+    def update(
+        self
+    ) -> str:
+        return self.current_scene

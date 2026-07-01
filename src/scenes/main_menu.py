@@ -106,3 +106,8 @@ class MainScene(Scene):
         self.high_score_button.draw(self.screen)
         self.instructions_button.draw(self.screen)
         self.exit_button.draw(self.screen)
+
+    def update(
+        self
+    ) -> str:
+        return self.current_scene

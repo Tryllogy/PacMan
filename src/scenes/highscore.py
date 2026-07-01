@@ -34,3 +34,8 @@ class HighscoreScene(Scene):
         self,
     ) -> None:
         self.back_button.draw(self.screen)
+
+    def update(
+        self
+    ) -> str:
+        return self.current_scene
