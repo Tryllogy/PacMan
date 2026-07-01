@@ -9,12 +9,12 @@ def reverse(map: list[list[int]]) -> list[list[int]]:
 
 
 def get_adj(pos: tuple[int, int],
-            map: list[list[int]]
+            map_maze: list[list[int]]
             ) -> list[tuple[int, int]]:
     #  west, south, east, north
     result = []
     x, y = pos
-    value = format(map[x][y], '04b')
+    value = format(map_maze[x][y], '04b')
     if value[0] == '0':
         result.append((x - 1, y))
     if value[1] == '0':

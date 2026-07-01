@@ -50,7 +50,7 @@ class AggressiveStrategy(Strategy):
         g_cost: dict[tuple[int, int], float] = {start: 0.0}
         parent: dict[tuple[int, int], tuple[int, int]] = {}
         while open_heap:
-            _, current = heapq.heappop(open_heap)
+            cost, current = heapq.heappop(open_heap)
             if current == goal:
                 break
             lst_adj = get_adj(current, self.map_grid)
@@ -64,9 +64,9 @@ class AggressiveStrategy(Strategy):
         result = self.build_path(current, parent)
         return result
 
-    # Will follow the player everytime
-    def mouvement(self):
-        pass
+    # # Will follow the player everytime
+    # def mouvement(self):
+    #     pass
 
 
 if __name__ == '__main__':

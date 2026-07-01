@@ -35,6 +35,14 @@ class Data(BaseModel):
         if not Path(directory).exists():
             raise ErrorParsing(
                 f"highscore's directory doesnt exist: {directory}")
+        if not os.access(self.highscore_filename, os.R_OK):
+            raise ErrorParsing(
+                f"permission denied (read) {self.highscore_filename}"
+            )
+        if not os.access(self.highscore_filename, os.W_OK):
+            raise ErrorParsing(
+                f"permission denied (write) {self.highscore_filename}"
+            )
         return self
 
 

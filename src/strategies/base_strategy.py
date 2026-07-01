@@ -9,7 +9,11 @@ class Strategy(ABC):
         self.name: str = name
 
     @abstractmethod
-    def mouvement(self):
+    def get_path(
+        self,
+        self_pos: tuple[int, int],
+        player_pos: tuple[int, int]
+            ) -> list[tuple[int, int]]:
         pass
 
     # Will go to his spawnpoint if killed by player (can be not abstract)
