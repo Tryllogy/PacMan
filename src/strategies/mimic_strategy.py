@@ -1,4 +1,4 @@
-from .base_strategy import Strategy
+from .strategy import Strategy
 
 
 class MimicStrategy(Strategy):
@@ -9,5 +9,5 @@ class MimicStrategy(Strategy):
         super().__init__(name)
 
     # Will mimic the player mouvements
-    def mouvement(self):
+    def movement(self):
         return super().mouvement()

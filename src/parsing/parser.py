@@ -10,13 +10,14 @@ class ErrorParsing(Exception):
 
 
 class Level(BaseModel):
+    name: str = Field(min_length=1, max_length=20)  # 1 / 20
     width: int = Field(ge=10, default=10)  # 10 / 10
     height: int = Field(ge=10, default=10)  # 10 / 10
 
 
 class Data(BaseModel):
     highscore_filename: str = 'score.json'  # "Score.json"
-    levels: list[Level]
+    levels: list[Level] = Field(min_items=10)
     lives: int = Field(ge=3, default=3)  # 3 / 3
     points_per_pacgum: int = Field(ge=1, default=10)  # 1 / 10
     points_per_super_pacgum: int = Field(ge=1, default=50)  # 1 / 50

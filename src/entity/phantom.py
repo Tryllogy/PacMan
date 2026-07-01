@@ -63,16 +63,18 @@ class Phantom(Entity):
         self.strategy = strategy
 
     def gen_move(
-            self,
-            path: list[tuple[int, int]]
-            ) -> Generator[tuple[int, int], None, None]:
+        self,
+        path: list[tuple[int, int]]
+    ) -> Generator[tuple[int, int], None, None]:
         for pos in path:
             yield pos
         return None
 
     def update_path(self) -> None:
-        print('phantom.py selfmazepos', self.maze_pos)
-        self.path = self.strategy.get_path(self.maze_pos, self.player_maze_pos)
+        self.path = self.strategy.movement(
+            self.maze_pos,
+            self.player_maze_pos
+        )
         self.movements = self.gen_move(self.path)
 
     def update_hitbox(
@@ -90,7 +92,10 @@ class Phantom(Entity):
 
     # Base on strategy it will move differently from other phantoms
     def move(self):
-        case_x, case_y = next(self.movements)
+        try:
+            case_x, case_y = next(self.movements)
+        except StopIteration:
+            return
         pxl_x = case_x * self.ppc[0] + self.offset[0]
         pxl_y = case_y * self.ppc[1] + self.offset[1]
         self.update_hitbox(pxl_x, pxl_y)  # convert x, y in pxl from screen. self.movements give position in maze case x, y
@@ -136,6 +141,7 @@ class Phantom(Entity):
     ) -> None:
         self.update_player_pos(player_pos)
         self.update_path()
+        self.move()
 
     def reset_position(
         self

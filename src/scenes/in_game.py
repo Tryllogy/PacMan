@@ -1,7 +1,7 @@
 from mazegenerator import MazeGenerator
 from ..parsing import Data
 from .scene import Scene, GameState
-from ..strategies import AggressiveStrategy
+from ..strategies import (AggressiveStrategy, RetreatStrategy, RandomStrategy)
 from ..entity import (Phantom, Player, Direction,
                       Wall, Pacgum, SuperPacgum)
 from .. import constant
@@ -40,7 +40,7 @@ class InGameScene(Scene):
         self.super_pacgums: list[SuperPacgum] = []
         self.make_wall()
         self.make_pacgum()
-        # self.make_phantom()
+        self.make_phantom()
         self.make_player()
 
     def update(
@@ -58,18 +58,17 @@ class InGameScene(Scene):
             offset_h = (screen_pxl_h - maze_pxl_h) / 2
             ppc_x = maze_pxl_w / maze_case_w
             ppc_y = maze_pxl_h / maze_case_h
-            print('ppc, x, y', ppc_x, ppc_y)
-            print("maze size pxl", self.maze_size_px)
-            print('screen size pxl', screen_pxl_w, screen_pxl_h)
-            print("player pxl", self.player.x, self.player.y)
-            print("offset", offset_w, offset_h)
-            print(maze_case_w, maze_case_h)
+            # print('ppc, x, y', ppc_x, ppc_y)
+            # print("maze size pxl", self.maze_size_px)
+            # print('screen size pxl', screen_pxl_w, screen_pxl_h)
+            # print("player pxl", self.player.x, self.player.y)
+            # print("offset", offset_w, offset_h)
+            # print(maze_case_w, maze_case_h)
             player_maze_y = int((self.player.y - offset_h) // ppc_y)  # maze_case_h
             player_maze_x = int((self.player.x - offset_w) // ppc_x)  # maze_case_w
-            print(player_maze_x, player_maze_y)
+            # print(player_maze_x, player_maze_y)
             player_pos = (player_maze_x, player_maze_y)
             phantom.update(player_pos)
-            phantom.move()
         self.player.update(self.walls, self.pacgums, self.super_pacgums,
                            self.phantoms)
 
@@ -112,6 +111,7 @@ class InGameScene(Scene):
         self.player.draw(self.screen)
         self.draw_score()
         self.draw_lives()
+        self.draw_level()
 
     def draw_score(
         self
@@ -126,6 +126,13 @@ class InGameScene(Scene):
         lives_text = self.font.render(f"Lives: {self.player.lives}",
                                       True, (255, 255, 255))
         self.screen.blit(lives_text, (10, 50))
+
+    def draw_level(
+        self
+    ) -> None:
+        level_text = self.font.render(f"{self.config.levels[0].name}",
+                                      True, (255, 255, 255))
+        self.screen.blit(level_text, (10, 90))
 
     def get_offset(
         self
@@ -209,11 +216,6 @@ class InGameScene(Scene):
         offset_h = (screen_pxl_h - maze_pxl_h) / 2
         ppc_x = maze_pxl_w / maze_case_w
         ppc_y = maze_pxl_h / maze_case_h
-        print('ppc, x, y', ppc_x, ppc_y)
-        print("maze size pxl", self.maze_size_px)
-        print('screen size pxl', screen_pxl_w, screen_pxl_h)
-        print("offset", offset_w, offset_h)
-        print(maze_case_w, maze_case_h)
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             0 + self.offset[1] + offset_phantom,
@@ -235,7 +237,7 @@ class InGameScene(Scene):
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             my + self.offset[1] + offset_phantom,
-            AggressiveStrategy(self.maze_gen.maze),
+            RandomStrategy(self.maze_gen.maze, (x, 0)),
             "blue",
             (x, 0),
             (ppc_x, ppc_y),
@@ -244,7 +246,7 @@ class InGameScene(Scene):
         self.phantoms.append(Phantom(
             my + self.offset[0] + offset_phantom,
             mx + self.offset[1] + offset_phantom,
-            AggressiveStrategy(self.maze_gen.maze),
+            RandomStrategy(self.maze_gen.maze, (0, y)),
             "red",
             (0, y),
             (ppc_x, ppc_y),
