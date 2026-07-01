@@ -90,10 +90,9 @@ class Phantom(Entity):
     # Base on strategy it will move differently from other phantoms
     def move(self):
         case_x, case_y = next(self.movements)
-        pxl_x = case_x * ppc_x + offset_w
-        pxl_y = case_y * ppc_y + offset_h
-        tmp_x = 
-        self.update_hitbox(self.y, self.x)  # convert x, y in pxl from screen. self.movements give position in maze case x, y
+        pxl_x = case_x * self.ppc[0] + self.offset[0]
+        pxl_y = case_y * self.ppc[1] + self.offset[1]
+        self.update_hitbox(pxl_x, pxl_y)  # convert x, y in pxl from screen. self.movements give position in maze case x, y
 
     def get_sprites(
         self
