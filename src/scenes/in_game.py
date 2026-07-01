@@ -47,8 +47,8 @@ class InGameScene(Scene):
     ) -> None:
 
         for phantom in self.phantoms:
-            # player_pos = (self.player.x, self.player.y)  #  x, y from the whole screen in pxl not the maze_size in pxl
-            # player_pos = (self.player.origin_x, self.player.origin_y)
+            #  have to move this block 
+            #  Start
             maze_case_h = len(self.maze_gen.maze)
             maze_case_w = len(self.maze_gen.maze[0])
             screen_pxl_w, screen_pxl_h = self.screen.get_size()
@@ -67,6 +67,7 @@ class InGameScene(Scene):
             player_maze_x = int((self.player.x - offset_w) // ppc_x)  # maze_case_w
             print(player_maze_x, player_maze_y)
             player_pos = (player_maze_x, player_maze_y)
+            #  End
             phantom.update(player_pos)
             phantom.move()
         self.player.update(self.walls, self.pacgums, self.super_pacgums)
