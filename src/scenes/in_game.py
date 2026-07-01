@@ -201,33 +201,54 @@ class InGameScene(Scene):
         my -= constant.WALL_HEIGHT
         y = len(self.maze_gen.maze) - 1
         x = len(self.maze_gen.maze[0]) - 1
+        maze_case_h = len(self.maze_gen.maze)
+        maze_case_w = len(self.maze_gen.maze[0])
+        screen_pxl_w, screen_pxl_h = self.screen.get_size()
+        maze_pxl_h, maze_pxl_w = self.maze_size_px
+        offset_w = (screen_pxl_w - maze_pxl_w) / 2
+        offset_h = (screen_pxl_h - maze_pxl_h) / 2
+        ppc_x = maze_pxl_w / maze_case_w
+        ppc_y = maze_pxl_h / maze_case_h
+        print('ppc, x, y', ppc_x, ppc_y)
+        print("maze size pxl", self.maze_size_px)
+        print('screen size pxl', screen_pxl_w, screen_pxl_h)
+        print("offset", offset_w, offset_h)
+        print(maze_case_w, maze_case_h)
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             0 + self.offset[1] + offset_phantom,
             AggressiveStrategy(self.maze_gen.maze),
             "purple",
             (x, y),
+            (ppc_x, ppc_y),
+            (offset_w, offset_h)
         ))
         self.phantoms.append(Phantom(
             mx + self.offset[0] + offset_phantom,
             0 + self.offset[1] + offset_phantom,
             AggressiveStrategy(self.maze_gen.maze),
             "green",
-            (0, 0)
+            (0, 0),
+            (ppc_x, ppc_y),
+            (offset_w, offset_h)
         ))
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             my + self.offset[1] + offset_phantom,
             AggressiveStrategy(self.maze_gen.maze),
             "blue",
-            (x, 0)
+            (x, 0),
+            (ppc_x, ppc_y),
+            (offset_w, offset_h)
         ))
         self.phantoms.append(Phantom(
             my + self.offset[0] + offset_phantom,
             mx + self.offset[1] + offset_phantom,
             AggressiveStrategy(self.maze_gen.maze),
             "red",
-            (0, y)
+            (0, y),
+            (ppc_x, ppc_y),
+            (offset_w, offset_h)
         ))
 
     def make_wall(
