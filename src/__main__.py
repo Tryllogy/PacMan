@@ -31,7 +31,8 @@ def main() -> None:
         sys.exit(1)
 
     pygame.init()
-    maze_gen: MazeGenerator = MazeGenerator((config.width, config.height))
+    maze_gen: MazeGenerator = MazeGenerator((config.levels[0].width,
+                                             config.levels[0].height))
     maze_gen.generate()
     screen = pygame.display.set_mode(
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
@@ -82,8 +83,7 @@ def reset_all_scenes(
 
 
 if __name__ == "__main__":
-    # try:
-    #     main()
-    # except Exception as e:
-    #     print(e)
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)

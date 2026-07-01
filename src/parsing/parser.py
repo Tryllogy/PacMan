@@ -9,13 +9,15 @@ class ErrorParsing(Exception):
         super().__init__(*args)
 
 
-class Data(BaseModel):
-    highscore_filename: str = 'score.json'  # "Score.json"
-    level: list  # []
+class Level(BaseModel):
     width: int = Field(ge=10, default=10)  # 10 / 10
     height: int = Field(ge=10, default=10)  # 10 / 10
+
+
+class Data(BaseModel):
+    highscore_filename: str = 'score.json'  # "Score.json"
+    levels: list[Level]
     lives: int = Field(ge=3, default=3)  # 3 / 3
-    pacgum: int = Field(ge=1, default=42)  # 1 / 42
     points_per_pacgum: int = Field(ge=1, default=10)  # 1 / 10
     points_per_super_pacgum: int = Field(ge=1, default=50)  # 1 / 50
     points_per_ghost: int = Field(ge=1, default=200)  # 1 / 200
