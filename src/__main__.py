@@ -70,7 +70,7 @@ def main() -> None:
 
         reset_all_scenes(scenes)
         pygame.display.flip()
-        clock.tick(60)
+        clock.tick(constant.FPS)
 
     pygame.quit()
     sys.exit(0)

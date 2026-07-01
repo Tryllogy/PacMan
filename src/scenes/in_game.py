@@ -29,6 +29,10 @@ class InGameScene(Scene):
         self.points_per_pacgum: int = config.points_per_pacgum
         self.points_per_super_pacgum: int = config.points_per_super_pacgum
         self.points_per_ghost: int = config.points_per_ghost
+        self.level_max_time: int = config.level_max_time
+        self.timer: int = self.level_max_time
+        pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
+        self.timer = self.level_max_time
         self.current_scene = GameState.GAME.value
         self.base_scene = self.current_scene
         self.maze_gen: MazeGenerator = maze_gen
@@ -46,10 +50,7 @@ class InGameScene(Scene):
     def update(
         self
     ) -> str:
-
         for phantom in self.phantoms:
-            # player_pos = (self.player.x, self.player.y)  #  x, y from the whole screen in pxl not the maze_size in pxl
-            # player_pos = (self.player.origin_x, self.player.origin_y)
             maze_case_h = len(self.maze_gen.maze)
             maze_case_w = len(self.maze_gen.maze[0])
             screen_pxl_w, screen_pxl_h = self.screen.get_size()
@@ -58,17 +59,11 @@ class InGameScene(Scene):
             offset_h = (screen_pxl_h - maze_pxl_h) / 2
             ppc_x = maze_pxl_w / maze_case_w
             ppc_y = maze_pxl_h / maze_case_h
-            # print('ppc, x, y', ppc_x, ppc_y)
-            # print("maze size pxl", self.maze_size_px)
-            # print('screen size pxl', screen_pxl_w, screen_pxl_h)
-            # print("player pxl", self.player.x, self.player.y)
-            # print("offset", offset_w, offset_h)
-            # print(maze_case_w, maze_case_h)
-            player_maze_y = int((self.player.y - offset_h) // ppc_y)  # maze_case_h
-            player_maze_x = int((self.player.x - offset_w) // ppc_x)  # maze_case_w
-            # print(player_maze_x, player_maze_y)
+            player_maze_y = int((self.player.y - offset_h) // ppc_y)
+            player_maze_x = int((self.player.x - offset_w) // ppc_x)
             player_pos = (player_maze_x, player_maze_y)
             phantom.update(player_pos)
+
         self.player.update(self.walls, self.pacgums, self.super_pacgums,
                            self.phantoms)
 
@@ -83,8 +78,12 @@ class InGameScene(Scene):
         events
     ) -> str:
         for event in events:
+            if event.type == pygame.USEREVENT + 1:
+                if self.timer > 0:
+                    self.timer -= 1
+                    if self.timer <= 0:
+                        self.current_scene = GameState.LOSE.value
             if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                print("PAUSE")
                 self.current_scene = GameState.PAUSE.value
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 self.player.next_direction = Direction.UP
@@ -112,6 +111,14 @@ class InGameScene(Scene):
         self.draw_score()
         self.draw_lives()
         self.draw_level()
+        self.draw_timer()
+
+    def draw_timer(
+        self,
+    ) -> None:
+        timer_text = self.font.render(f"Time: {self.timer}",
+                                      True, (255, 255, 255))
+        self.screen.blit(timer_text, (10, 130))
 
     def draw_score(
         self
