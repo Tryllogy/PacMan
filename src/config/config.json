@@ -1,6 +1,6 @@
 [
     {
-        "highscore_filename": "Score.json",
+        "highscore_filename": "score.json",
         "levels" : [
             {
                 "width": 10,

@@ -31,15 +31,16 @@ class Data(BaseModel):
                 'highscore filename is not a json file: '
                 f'{self.highscore_filename}'
             )
-        directory = os.path.dirname(self.highscore_filename)
+        root_score_dir: str = "src/score/"
+        directory = os.path.dirname(root_score_dir + self.highscore_filename)
         if not Path(directory).exists():
             raise ErrorParsing(
                 f"highscore's directory doesnt exist: {directory}")
-        if not os.access(self.highscore_filename, os.R_OK):
+        if not os.access(root_score_dir + self.highscore_filename, os.R_OK):
             raise ErrorParsing(
                 f"permission denied (read) {self.highscore_filename}"
             )
-        if not os.access(self.highscore_filename, os.W_OK):
+        if not os.access(root_score_dir + self.highscore_filename, os.W_OK):
             raise ErrorParsing(
                 f"permission denied (write) {self.highscore_filename}"
             )

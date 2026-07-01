@@ -28,7 +28,7 @@ class Phantom(Entity):
             y: int,
             strategy: Strategy,
             color: str,
-            self_maze_pos: tuple[int, int],
+            maze_pos: tuple[int, int],
             ppc: tuple[int, int],
             offset: tuple[int, int]
     ):
@@ -43,12 +43,13 @@ class Phantom(Entity):
         self.sprite_index: int = 0
         self.current_sprite: pygame.Surface = self.sprites[self.sprite_index]
         self.direction: Direction = Direction.RIGHT
-        self.self_maze_pos: tuple[int, int] = self_maze_pos
+        self.maze_pos: tuple[int, int] = maze_pos
         self.ppc: tuple[int, int] = ppc
         self.offset: tuple[int, int] = offset
         # self.ppc_w: int = ppc_w
         # self.ppc_h: int = ppc_h
         self.path: list[tuple[int, int]] = []
+        self.hitbox: pygame.Rect
 
     def update_player_pos(self, pos: tuple[int, int]) -> None:
         self.player_maze_pos = pos
@@ -70,8 +71,8 @@ class Phantom(Entity):
         return None
 
     def update_path(self) -> None:
-        print('phantom.py selfmazepos', self.self_maze_pos)
-        self.path = self.strategy.get_path(self.self_maze_pos, self.player_maze_pos)
+        print('phantom.py selfmazepos', self.maze_pos)
+        self.path = self.strategy.get_path(self.maze_pos, self.player_maze_pos)
         self.movements = self.gen_move(self.path)
 
     def update_hitbox(
@@ -92,7 +93,7 @@ class Phantom(Entity):
         case_x, case_y = next(self.movements)
         pxl_x = case_x * ppc_x + offset_w
         pxl_y = case_y * ppc_y + offset_h
-        tmp_x = 
+        tmp_x = None
         self.update_hitbox(self.y, self.x)  # convert x, y in pxl from screen. self.movements give position in maze case x, y
 
     def get_sprites(
@@ -136,3 +137,10 @@ class Phantom(Entity):
     ) -> None:
         self.update_player_pos(player_pos)
         self.update_path()
+
+    def reset_position(
+        self
+    ) -> None:
+        self.x = self.spawn_x
+        self.y = self.spawn_y
+        self.maze_pos = (self.spawn_x // self.ppc[0], self.spawn_y // self.ppc[1])

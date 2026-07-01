@@ -9,6 +9,7 @@ class Direction(Enum):
     DOWN: str = "down"
     LEFT: str = "left"
     RIGHT: str = "right"
+    NONE: str = "none"
 
 
 class Entity(ABC):

@@ -39,7 +39,7 @@ def main() -> None:
     pygame.display.set_caption("PacMan")
     scenes: dict[str, Scene] = {
         GameState.MAIN.value: MainScene(screen),
-        GameState.GAME.value: InGameScene(screen, maze_gen),
+        GameState.GAME.value: InGameScene(screen, maze_gen, config),
         GameState.PAUSE.value: PauseScene(screen),
         GameState.WIN.value: WinScene(screen),
         GameState.LOSE.value: LoseScene(screen),
@@ -83,7 +83,8 @@ def reset_all_scenes(
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(e)
+    # try:
+    #     main()
+    # except Exception as e:
+    #     print(e)
+    main()

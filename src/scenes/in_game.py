@@ -1,4 +1,5 @@
 from mazegenerator import MazeGenerator
+from ..parsing import Data
 from .scene import Scene, GameState
 from ..strategies import AggressiveStrategy
 from ..entity import (Phantom, Player, Direction,
@@ -20,14 +21,14 @@ class InGameScene(Scene):
         self,
         screen: pygame.Surface,
         maze_gen: MazeGenerator,
-        points_per_pacgum: int = 1,
-        points_per_superpacgum: int = 5,
-        points_per_ghost: int = 10
+        config: Data,
     ) -> None:
         super().__init__(screen)
-        self.points_per_pacgum: int = points_per_pacgum
-        self.points_per_superpacgum: int = points_per_superpacgum
-        self.points_per_ghost: int = points_per_ghost
+        self.font: pygame.font.Font = pygame.font.Font(None, 36)
+        self.config: Data = config
+        self.points_per_pacgum: int = config.points_per_pacgum
+        self.points_per_super_pacgum: int = config.points_per_super_pacgum
+        self.points_per_ghost: int = config.points_per_ghost
         self.current_scene = GameState.GAME.value
         self.base_scene = self.current_scene
         self.maze_gen: MazeGenerator = maze_gen
@@ -39,7 +40,7 @@ class InGameScene(Scene):
         self.super_pacgums: list[SuperPacgum] = []
         self.make_wall()
         self.make_pacgum()
-        self.make_phantom()
+        # self.make_phantom()
         self.make_player()
 
     def update(
@@ -69,7 +70,8 @@ class InGameScene(Scene):
             player_pos = (player_maze_x, player_maze_y)
             phantom.update(player_pos)
             phantom.move()
-        self.player.update(self.walls, self.pacgums, self.super_pacgums)
+        self.player.update(self.walls, self.pacgums, self.super_pacgums,
+                           self.phantoms)
 
     def handle_events(
         self,
@@ -102,6 +104,22 @@ class InGameScene(Scene):
         for phantom in self.phantoms:
             phantom.draw(self.screen)
         self.player.draw(self.screen)
+        self.draw_score()
+        self.draw_lives()
+
+    def draw_score(
+        self
+    ) -> None:
+        score_text = self.font.render(f"Score: {self.player.points}",
+                                      True, (255, 255, 255))
+        self.screen.blit(score_text, (10, 10))
+
+    def draw_lives(
+        self
+    ) -> None:
+        lives_text = self.font.render(f"Lives: {self.player.lives}",
+                                      True, (255, 255, 255))
+        self.screen.blit(lives_text, (10, 50))
 
     def get_offset(
         self
@@ -142,9 +160,10 @@ class InGameScene(Scene):
             self.offset[1] + offset_player + pox_y,
             self.offset[0] + offset_player,
             self.offset[1] + offset_player,
-            points_per_pacgum=self.points_per_pacgum,
-            points_per_superpacgum=self.points_per_superpacgum,
-            points_per_ghost=self.points_per_ghost
+            self.config.lives,
+            self.config.points_per_pacgum,
+            self.config.points_per_super_pacgum,
+            self.config.points_per_ghost
         )
 
     def make_pacgum(
