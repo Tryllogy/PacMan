@@ -33,7 +33,7 @@ class InGameScene(Scene):
         self.base_scene = self.current_scene
         self.maze_gen: MazeGenerator = maze_gen
         self.phantoms: list[Phantom] = []
-        self.player: Player = None
+        self.player: Player | None = None
         self.offset: tuple[int, int] = self.get_offset()
         self.walls: list[Wall] = []
         self.pacgums: list[Pacgum] = []

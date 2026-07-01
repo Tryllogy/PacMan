@@ -1,7 +1,7 @@
 from pathlib import Path
 from pydantic import BaseModel, Field, model_validator
-import json
 import os
+import json5
 
 
 class ErrorParsing(Exception):
@@ -69,16 +69,6 @@ class Parser():
                 if c == '"' and (i == 0 or raw_file[i - 1] != '\\'):
                     in_string = not in_string
                 if not in_string:
-                    if raw_file[i: i + 2] == "//":
-                        i += 2
-                        while i < len(raw_file) and raw_file[i] != '\n':
-                            i += 1
-                        continue
-                    if raw_file[i: i + 2] == '/*':
-                        i += 2
-                        while i < len(raw_file) and raw_file[i] != '\n':
-                            i += 1
-                        continue
                     if raw_file[i] == '#':
                         i += 1
                         while i < len(raw_file) and raw_file[i] != '\n':
@@ -86,7 +76,7 @@ class Parser():
                         continue
                 result += c
                 i += 1
-        return json.loads(result)
+        return json5.loads(result)
 
     def get_data(self) -> Data:
         data = Data.model_validate(self.data[0])

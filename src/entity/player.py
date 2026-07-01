@@ -2,6 +2,9 @@ import pygame
 import os
 from .entity import Direction, Entity
 from .phantom import Phantom
+from .wall import Wall
+from .pacgum import Pacgum
+from .superpacgum import SuperPacgum
 from .. import constant
 
 
@@ -25,7 +28,7 @@ class Player(Entity):
         self.points_per_super_pacgum: int = points_per_super_pacgum
         self.points_per_ghost: int = points_per_ghost
         self.points: int = 0
-        self.sprite_dimensions: list[int, int] = []
+        self.sprite_dimensions: list[tuple[int, int]] = []
         self.sprite_index: int = 0
         self.sprites: list[pygame.Surface] = self.get_sprites()
         self.current_sprite: pygame.Surface = self.sprites[self.sprite_index]
@@ -98,7 +101,7 @@ class Player(Entity):
 
     def can_move(
         self,
-        walls: list[pygame.Rect],
+        walls: list[Wall],
         direction: Direction
     ) -> bool:
         dx, dy = {
@@ -114,9 +117,9 @@ class Player(Entity):
 
     def update(
         self,
-        walls: list[pygame.Rect],
-        pacgums: list[pygame.Rect] = [],
-        super_pacgums: list[pygame.Rect] = [],
+        walls: list[Wall],
+        pacgums: list[Pacgum] = [],
+        super_pacgums: list[SuperPacgum] = [],
         phantoms: list[Phantom] = []
     ) -> None:
         self.update_hitbox(self.x, self.y)
