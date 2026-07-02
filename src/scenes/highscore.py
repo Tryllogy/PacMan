@@ -12,7 +12,6 @@ class HighscoreScene(Scene):
         filename: str,
     ) -> None:
         super().__init__(screen)
-        self.font: pygame.font.Font = pygame.font.Font(None, 36)
         self.current_scene = GameState.HIGHSCORE.value
         self.base_scene = self.current_scene
         x, y = self.middle_screen
@@ -46,6 +45,8 @@ class HighscoreScene(Scene):
 
     def handle_events(self, events):
         for event in events:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.current_scene = GameState.MAIN.value
             self.back_button.handle_event(event)
         return self.current_scene
 
@@ -53,15 +54,23 @@ class HighscoreScene(Scene):
         self
     ) -> None:
         x, y = self.middle_screen
-        for i, score in enumerate(self.highscores):
-            if i >= 10:
-                break
+        if len(self.highscores) == 0:
             text = self.font.render(
-                f"{i + 1}. {score['name']} - {score['score']}",
+                "No highscores yet.",
                 True,
                 constant.TEXT_COLOR_BASE
             )
-            self.screen.blit(text, (x - 100, y - 200 + i * 40))
+            self.screen.blit(text, (x - 100, y - 200))
+        else:
+            for i, score in enumerate(self.highscores):
+                if i >= 10:
+                    break
+                text = self.font.render(
+                    f"{i + 1}. {score['name']} - {score['score']}",
+                    True,
+                    constant.TEXT_COLOR_BASE
+                )
+                self.screen.blit(text, (x - 100, y - 200 + i * 40))
 
     def draw(
         self,

@@ -1,7 +1,7 @@
 from mazegenerator import MazeGenerator
 from ..parsing import Data
 from .scene import Scene, GameState
-from ..strategies import (AggressiveStrategy, RetreatStrategy, RandomStrategy)
+from ..strategies import (AggressiveStrategy, RandomStrategy)
 from ..entity import (Phantom, Player, Direction,
                       Wall, Pacgum, SuperPacgum, Score)
 from .. import constant
@@ -25,7 +25,6 @@ class InGameScene(Scene):
         score: Score
     ) -> None:
         super().__init__(screen)
-        self.font: pygame.font.Font = pygame.font.Font(None, 36)
         self.config: Data = config
         self.points_per_pacgum: int = config.points_per_pacgum
         self.points_per_super_pacgum: int = config.points_per_super_pacgum
@@ -105,7 +104,7 @@ class InGameScene(Scene):
                     self.timer -= 1
                     if self.timer <= 0:
                         self.current_scene = GameState.LOSE.value
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.current_scene = GameState.PAUSE.value
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
                 self.player.next_direction = Direction.UP

@@ -32,17 +32,22 @@ def main() -> None:
         sys.exit(1)
 
     pygame.init()
-    maze_gen: MazeGenerator = MazeGenerator(
-        (config.levels[0].width, config.levels[0].height),
-        seed=config.seed)
-    maze_gen.generate(config.seed)
     screen = pygame.display.set_mode(
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
     pygame.display.set_caption("PacMan")
     score: Score = Score()
+
+    def new_game_scene() -> InGameScene:
+        maze_gen: MazeGenerator = MazeGenerator(
+            (config.levels[0].width, config.levels[0].height),
+            seed=config.seed)
+        maze_gen.generate(config.seed)
+        score.score = 0
+        return InGameScene(screen, maze_gen, config, score)
+
     scenes: dict[str, Scene] = {
         GameState.MAIN.value: MainScene(screen),
-        GameState.GAME.value: InGameScene(screen, maze_gen, config, score),
+        GameState.GAME.value: new_game_scene(),
         GameState.PAUSE.value: PauseScene(screen),
         GameState.WIN.value: WinScene(screen, config, score),
         GameState.LOSE.value: LoseScene(screen, config, score),
@@ -58,13 +63,16 @@ def main() -> None:
         events = pygame.event.get()
         screen.fill((0, 0, 0))
 
-        if any(event.type == pygame.QUIT or
-               (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE)
-               for event in events):
-            pygame.quit()
-            sys.exit(0)
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit(0)
 
+        prev_scene = current_scene
         next_scene = scenes[current_scene].handle_events(events)
+        if (prev_scene == GameState.MAIN.value
+                and next_scene == GameState.GAME.value):
+            scenes[GameState.GAME.value] = new_game_scene()
         current_scene = next_scene
 
         next_scene = scenes[current_scene].update()

@@ -98,7 +98,8 @@ class Phantom(Entity):
             return
         pxl_x = case_x * self.ppc[0] + self.offset[0]
         pxl_y = case_y * self.ppc[1] + self.offset[1]
-        self.update_hitbox(pxl_x, pxl_y)  # convert x, y in pxl from screen. self.movements give position in maze case x, y
+        self.update_hitbox(pxl_x, pxl_y)  # convert x, y in pxl from screen.
+        # self.movements give position in maze case x, y
 
     def get_sprites(
         self

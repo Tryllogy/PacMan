@@ -27,7 +27,6 @@ class EndScene(Scene):
         super().__init__(screen)
         self.current_scene = state.value
         self.base_scene = self.current_scene
-        self.font: pygame.font.Font = pygame.font.Font(None, 74)
         self.title_text = self.font.render(title, True, title_color)
         self.title_text_rect = self.title_text.get_rect(
             center=self.middle_screen)
