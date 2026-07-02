@@ -4,6 +4,7 @@ from .entity import Entity, Direction
 from .wall import Wall
 from .pacgum import Pacgum
 from .superpacgum import SuperPacgum
+from .score import Score
 
 __all__ = [
     "Phantom",
@@ -12,5 +13,6 @@ __all__ = [
     "Direction",
     "Wall",
     "Pacgum",
-    "SuperPacgum"
+    "SuperPacgum",
+    "Score"
 ]

@@ -9,6 +9,7 @@ class Direction(Enum):
     DOWN: str = "down"
     LEFT: str = "left"
     RIGHT: str = "right"
+    NONE: str = "none"
 
 
 class Entity(ABC):
@@ -22,12 +23,6 @@ class Entity(ABC):
         self.spawn_x: int = x
         self.spawn_y: int = y
         self.sprites: list[pygame.Surface] = []
-
-    @abstractmethod
-    def update(
-        self
-    ) -> None:
-        pass
 
     @abstractmethod
     def draw(

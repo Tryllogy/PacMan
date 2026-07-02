@@ -1,16 +1,17 @@
-from .scene import Scene, GameState
+import pygame
+from .end_scene import EndScene
+from .scene import GameState
+from ..parsing import Data
+from ..entity import Score
 
 
-class LoseScene(Scene):
-    def __init__(self, screen):
-        super().__init__(screen)
-        self.current_scene = GameState.LOSE.value
-        self.base_scene = self.current_scene
-
-    def handle_events(self, events):
-        return super().handle_events(events)
-
-    def draw(
+class LoseScene(EndScene):
+    def __init__(
         self,
-    ):
-        super().draw()
+        screen: pygame.Surface,
+        config: Data,
+        score: Score
+    ) -> None:
+        super().__init__(
+            screen, config, score,
+            GameState.LOSE, "You Lose!", (255, 0, 0))

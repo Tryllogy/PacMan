@@ -1,16 +1,17 @@
-from .scene import Scene, GameState
+import pygame
+from .end_scene import EndScene
+from .scene import GameState
+from ..parsing import Data
+from ..entity import Score
 
 
-class WinScene(Scene):
-    def __init__(self, screen):
-        super().__init__(screen)
-        self.current_scene = GameState.WIN.value
-        self.base_scene = self.current_scene
-
-    def handle_events(self, events):
-        return super().handle_events(events)
-
-    def draw(
+class WinScene(EndScene):
+    def __init__(
         self,
-    ):
-        super().draw()
+        screen: pygame.Surface,
+        config: Data,
+        score: Score
+    ) -> None:
+        super().__init__(
+            screen, config, score,
+            GameState.WIN, "You Win!", (0, 255, 0))

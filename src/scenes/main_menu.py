@@ -1,3 +1,4 @@
+import pygame
 from .scene import Scene, GameState
 from .button import Button
 from .. import constant
@@ -92,6 +93,10 @@ class MainScene(Scene):
         events
     ) -> str:
         for event in events:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                import sys
+                sys.exit(0)
             self.play_button.handle_event(event)
             self.high_score_button.handle_event(event)
             self.instructions_button.handle_event(event)
@@ -106,3 +111,8 @@ class MainScene(Scene):
         self.high_score_button.draw(self.screen)
         self.instructions_button.draw(self.screen)
         self.exit_button.draw(self.screen)
+
+    def update(
+        self
+    ) -> str:
+        return self.current_scene

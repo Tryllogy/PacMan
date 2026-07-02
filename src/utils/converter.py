@@ -1,8 +1,10 @@
-
-
-
 class Converter():
-    def __init__(self, maze_size: tuple[int, int], maze_size_pxl: tuple[int, int], screen_size: tuple[int, int]):
+    def __init__(
+            self,
+            maze_size: tuple[int, int],
+            maze_size_pxl: tuple[int, int],
+            screen_size: tuple[int, int]
+            ) -> None:
         self.maze_h = maze_size[0]
         self.maze_w = maze_size[1]
         self.maze_h_pxl = maze_size_pxl[0]
@@ -11,16 +13,17 @@ class Converter():
         self.screen_w = screen_size[1]
         self.ppc_h = self.maze_h_pxl / self.maze_h
         self.ppc_w = self.maze_w_pxl / self.maze_w
-        self.offset_h = (self.screen_h - self.maze_h_pxl) // 2
-        self.offset_w = (self.screen_w - self.maze_w_pxl) // 2
-    
+        self.offset_h = (self.screen_h - self.maze_h_pxl) / 2
+        self.offset_w = (self.screen_w - self.maze_w_pxl) / 2
+
     def maze_to_pxl(self, case: tuple[int, int]) -> tuple[int, int]:
         pxl_line = case[0] * self.ppc_w + self.offset_w
         pxl_col = case[1] * self.ppc_h + self.offset_h
         return (pxl_line, pxl_col)
-    
+
     def pxl_to_maze(self, pxl: tuple[int, int]) -> tuple[int, int]:
-        #  HERE
         pxl_line = pxl[0]
         pxl_col = pxl[1]
-        case_line = 
+        player_maze_x = (pxl_line - self.offset_w) / self.ppc_w
+        player_maze_y = (pxl_col - self.offset_h) / self.ppc_h
+        return (player_maze_x, player_maze_y)

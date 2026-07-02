@@ -38,6 +38,7 @@ class Scene(ABC):
     ) -> GameState:
         pass
 
+    @abstractmethod
     def update(self) -> None:
         pass
 
