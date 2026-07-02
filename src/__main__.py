@@ -7,6 +7,7 @@ from .scenes import (
 from . import constant
 import pygame
 import sys
+from .entity import Score
 from .parsing.parser import Parser, Data
 from pathlib import Path
 from pydantic import ValidationError
@@ -31,23 +32,24 @@ def main() -> None:
         sys.exit(1)
 
     pygame.init()
-    maze_gen: MazeGenerator = MazeGenerator((config.levels[0].width,
-                                             config.levels[0].height))
-    maze_gen.generate()
+    maze_gen: MazeGenerator = MazeGenerator(
+        (config.levels[0].width, config.levels[0].height),
+        seed=constant.SEED)
+    maze_gen.generate(seed=constant.SEED)
     screen = pygame.display.set_mode(
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
     pygame.display.set_caption("PacMan")
+    score: Score = Score()
     scenes: dict[str, Scene] = {
         GameState.MAIN.value: MainScene(screen),
-        GameState.GAME.value: InGameScene(screen, maze_gen, config),
+        GameState.GAME.value: InGameScene(screen, maze_gen, config, score),
         GameState.PAUSE.value: PauseScene(screen),
-        GameState.WIN.value: WinScene(screen),
-        GameState.LOSE.value: LoseScene(screen),
+        GameState.WIN.value: WinScene(screen, config, score),
+        GameState.LOSE.value: LoseScene(screen, config, score),
         GameState.HIGHSCORE.value: HighscoreScene(screen),
         GameState.INSTRUCTIONS.value: InstructionsScene(screen),
     }
     current_scene: str = GameState.MAIN.value
-
     pygame.display.toggle_fullscreen()
     clock = pygame.time.Clock()
     running = True

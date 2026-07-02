@@ -5,6 +5,7 @@ from .phantom import Phantom
 from .wall import Wall
 from .pacgum import Pacgum
 from .superpacgum import SuperPacgum
+from .score import Score
 from .. import constant
 
 
@@ -15,10 +16,11 @@ class Player(Entity):
         y: int,
         origin_x: int,
         origin_y: int,
-        lives: int,
+        score: Score,
+        lives: int = 0,
         points_per_pacgum: int = 1,
         points_per_super_pacgum: int = 5,
-        points_per_ghost: int = 10
+        points_per_ghost: int = 10,
     ) -> None:
         super().__init__(x, y)
         self.origin_x: int = origin_x
@@ -27,7 +29,7 @@ class Player(Entity):
         self.points_per_pacgum: int = points_per_pacgum
         self.points_per_super_pacgum: int = points_per_super_pacgum
         self.points_per_ghost: int = points_per_ghost
-        self.points: int = 0
+        self.score: Score = score
         self.sprite_dimensions: list[tuple[int, int]] = []
         self.sprite_index: int = 0
         self.sprites: list[pygame.Surface] = self.get_sprites()
@@ -137,10 +139,10 @@ class Player(Entity):
             self.x += dx
             self.y += dy
         if self.check_collision(self.x, self.y, pacgums)[0]:
-            self.points += self.points_per_pacgum
+            self.score.score += self.points_per_pacgum
             pacgums.remove(self.check_collision(self.x, self.y, pacgums)[1])
         if self.check_collision(self.x, self.y, super_pacgums)[0]:
-            self.points += self.points_per_super_pacgum
+            self.score.score += self.points_per_super_pacgum
             super_pacgums.remove(self.check_collision(self.x, self.y,
                                                       super_pacgums)[1])
         if self.check_collision_with_phantoms(self.x, self.y, phantoms)[0]:
@@ -179,3 +181,15 @@ class Player(Entity):
             self.sprite_dimensions[self.sprite_index][0],
             self.sprite_dimensions[self.sprite_index][1]
         )
+
+    def new_start(
+        self,
+        x: int,
+        y: int,
+    ) -> None:
+        self.x = x
+        self.y = y
+        self.spawn_x = x
+        self.spawn_y = y
+        self.direction = Direction.NONE
+        self.next_direction = Direction.NONE

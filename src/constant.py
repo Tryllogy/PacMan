@@ -23,3 +23,5 @@ PLAYER_SPEED = 2
 PHANTOM_SPEED = 1.5
 
 FPS = 60
+SCORE_DIR = "src/score/"
+SEED = 42

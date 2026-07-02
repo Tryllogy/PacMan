@@ -3,7 +3,7 @@ from ..parsing import Data
 from .scene import Scene, GameState
 from ..strategies import (AggressiveStrategy, RetreatStrategy, RandomStrategy)
 from ..entity import (Phantom, Player, Direction,
-                      Wall, Pacgum, SuperPacgum)
+                      Wall, Pacgum, SuperPacgum, Score)
 from .. import constant
 from enum import Enum
 import pygame
@@ -22,6 +22,7 @@ class InGameScene(Scene):
         screen: pygame.Surface,
         maze_gen: MazeGenerator,
         config: Data,
+        score: Score
     ) -> None:
         super().__init__(screen)
         self.font: pygame.font.Font = pygame.font.Font(None, 36)
@@ -36,16 +37,18 @@ class InGameScene(Scene):
         self.current_scene = GameState.GAME.value
         self.base_scene = self.current_scene
         self.maze_gen: MazeGenerator = maze_gen
+        self.level_index: int = 0
         self.phantoms: list[Phantom] = []
         self.player: Player | None = None
         self.offset: tuple[int, int] = self.get_offset()
         self.walls: list[Wall] = []
         self.pacgums: list[Pacgum] = []
         self.super_pacgums: list[SuperPacgum] = []
+        self.score: Score = score
         self.make_wall()
         self.make_pacgum()
-        self.make_phantom()
-        self.make_player()
+        # self.make_phantom()
+        self.make_player(self.config.lives)
 
     def update(
         self
@@ -70,8 +73,27 @@ class InGameScene(Scene):
         if self.player.lives <= 0:
             self.current_scene = GameState.LOSE.value
         if len(self.pacgums) == 0 and len(self.super_pacgums) == 0:
-            self.current_scene = GameState.WIN.value
+            self.new_level()
         return self.current_scene
+
+    def new_level(
+        self
+    ) -> None:
+        self.level_index += 1
+        if self.level_index >= len(self.config.levels):
+            self.current_scene = GameState.WIN.value
+        else:
+            self.timer = self.level_max_time
+            self.phantoms.clear()
+            self.walls.clear()
+            self.pacgums.clear()
+            self.super_pacgums.clear()
+            self.generate_maze()
+            self.offset = self.get_offset()
+            self.make_wall()
+            self.make_pacgum()
+            self.make_phantom()
+            self.make_player(self.player.lives)
 
     def handle_events(
         self,
@@ -113,6 +135,14 @@ class InGameScene(Scene):
         self.draw_level()
         self.draw_timer()
 
+    def generate_maze(
+        self
+    ) -> None:
+        self.maze_gen = MazeGenerator(
+            (self.config.levels[self.level_index].width,
+                self.config.levels[self.level_index].height))
+        self.maze_gen.generate()
+
     def draw_timer(
         self,
     ) -> None:
@@ -123,7 +153,7 @@ class InGameScene(Scene):
     def draw_score(
         self
     ) -> None:
-        score_text = self.font.render(f"Score: {self.player.points}",
+        score_text = self.font.render(f"Score: {self.score.score}",
                                       True, (255, 255, 255))
         self.screen.blit(score_text, (10, 10))
 
@@ -156,8 +186,8 @@ class InGameScene(Scene):
     def find_open_middle_maze(
         self
     ) -> tuple[int, int]:
-        middle_maze_x: int = len(self.maze_gen.maze) // 2 - 1
-        middle_maze_y: int = len(self.maze_gen.maze[0]) // 2 - 1
+        middle_maze_x: int = round(len(self.maze_gen.maze) / 2) - 1
+        middle_maze_y: int = round(len(self.maze_gen.maze[0]) / 2) - 1
         while self.maze_gen.maze[middle_maze_x][middle_maze_y] == 15:
             middle_maze_x += 1
             if middle_maze_x >= len(self.maze_gen.maze):
@@ -168,7 +198,8 @@ class InGameScene(Scene):
         return (middle_maze_x, middle_maze_y)
 
     def make_player(
-        self
+        self,
+        lives: int,
     ) -> None:
         middle_maze_x, middle_maze_y = self.find_open_middle_maze()
         offset_player: int = constant.WALL_WIDTH * 1.3
@@ -180,10 +211,11 @@ class InGameScene(Scene):
             self.offset[1] + offset_player + pox_y,
             self.offset[0] + offset_player,
             self.offset[1] + offset_player,
-            self.config.lives,
+            self.score,
+            lives,
             self.config.points_per_pacgum,
             self.config.points_per_super_pacgum,
-            self.config.points_per_ghost
+            self.config.points_per_ghost,
         )
 
     def make_pacgum(

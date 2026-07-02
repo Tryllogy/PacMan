@@ -1,7 +1,6 @@
+import json5
 from pathlib import Path
 from pydantic import BaseModel, Field, model_validator
-import os
-import json5
 
 
 class ErrorParsing(Exception):
@@ -31,19 +30,6 @@ class Data(BaseModel):
             raise ErrorParsing(
                 'highscore filename is not a json file: '
                 f'{self.highscore_filename}'
-            )
-        root_score_dir: str = "src/score/"
-        directory = os.path.dirname(root_score_dir + self.highscore_filename)
-        if not Path(directory).exists():
-            raise ErrorParsing(
-                f"highscore's directory doesnt exist: {directory}")
-        if not os.access(root_score_dir + self.highscore_filename, os.R_OK):
-            raise ErrorParsing(
-                f"permission denied (read) {self.highscore_filename}"
-            )
-        if not os.access(root_score_dir + self.highscore_filename, os.W_OK):
-            raise ErrorParsing(
-                f"permission denied (write) {self.highscore_filename}"
             )
         return self
 
