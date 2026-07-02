@@ -11,7 +11,7 @@ class ZoneStrategy(Strategy):
 
     # Will take a zone to move in then circle in it until every spot has been
     # used 1 time
-    def mouvement(
+    def movement(
         self,
         start: tuple[int, int],
         goal: tuple[int, int]

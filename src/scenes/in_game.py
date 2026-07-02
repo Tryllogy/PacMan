@@ -47,7 +47,7 @@ class InGameScene(Scene):
         self.score: Score = score
         self.make_wall()
         self.make_pacgum()
-        # self.make_phantom()
+        self.make_phantom()
         self.make_player(self.config.lives)
 
     def update(
@@ -167,8 +167,9 @@ class InGameScene(Scene):
     def draw_level(
         self
     ) -> None:
-        level_text = self.font.render(f"{self.config.levels[0].name}",
-                                      True, (255, 255, 255))
+        level_text = self.font.render(
+            f"{self.config.levels[self.level_index].name}",
+            True, (255, 255, 255))
         self.screen.blit(level_text, (10, 90))
 
     def get_offset(

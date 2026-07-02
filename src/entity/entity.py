@@ -25,12 +25,6 @@ class Entity(ABC):
         self.sprites: list[pygame.Surface] = []
 
     @abstractmethod
-    def update(
-        self
-    ) -> None:
-        pass
-
-    @abstractmethod
     def draw(
         self,
         screen: pygame.Surface

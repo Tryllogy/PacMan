@@ -34,8 +34,8 @@ def main() -> None:
     pygame.init()
     maze_gen: MazeGenerator = MazeGenerator(
         (config.levels[0].width, config.levels[0].height),
-        seed=constant.SEED)
-    maze_gen.generate(seed=constant.SEED)
+        seed=config.seed)
+    maze_gen.generate(config.seed)
     screen = pygame.display.set_mode(
         (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
     pygame.display.set_caption("PacMan")
@@ -46,7 +46,8 @@ def main() -> None:
         GameState.PAUSE.value: PauseScene(screen),
         GameState.WIN.value: WinScene(screen, config, score),
         GameState.LOSE.value: LoseScene(screen, config, score),
-        GameState.HIGHSCORE.value: HighscoreScene(screen),
+        GameState.HIGHSCORE.value: HighscoreScene(screen,
+                                                  config.highscore_filename),
         GameState.INSTRUCTIONS.value: InstructionsScene(screen),
     }
     current_scene: str = GameState.MAIN.value

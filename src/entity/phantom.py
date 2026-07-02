@@ -148,4 +148,5 @@ class Phantom(Entity):
     ) -> None:
         self.x = self.spawn_x
         self.y = self.spawn_y
-        self.maze_pos = (self.spawn_x // self.ppc[0], self.spawn_y // self.ppc[1])
+        self.maze_pos = (self.spawn_x // self.ppc[0],
+                         self.spawn_y // self.ppc[1])
