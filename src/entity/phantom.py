@@ -2,6 +2,7 @@ from ..strategies import Strategy
 from .entity import Entity, Direction
 from enum import Enum
 from typing import Generator
+from ..utils import Converter
 import os
 import pygame
 from .. import constant
@@ -29,8 +30,7 @@ class Phantom(Entity):
             strategy: Strategy,
             color: str,
             maze_pos: tuple[int, int],
-            ppc: tuple[int, int],
-            offset: tuple[int, int]
+            conv: Converter
     ):
         super().__init__(x, y)
         if not isinstance(strategy, Strategy):
@@ -43,11 +43,9 @@ class Phantom(Entity):
         self.sprite_index: int = 0
         self.current_sprite: pygame.Surface = self.sprites[self.sprite_index]
         self.direction: Direction = Direction.RIGHT
+        self.next_direction: Direction = self.direction
         self.maze_pos: tuple[int, int] = maze_pos
-        self.ppc: tuple[int, int] = ppc
-        self.offset: tuple[int, int] = offset
-        # self.ppc_w: int = ppc_w
-        # self.ppc_h: int = ppc_h
+        self.conv = conv
         self.path: list[tuple[int, int]] = []
         self.hitbox: pygame.Rect
 
@@ -90,15 +88,47 @@ class Phantom(Entity):
             h
         )
 
+    def get_pxl_pos_delta(self, delta: float) -> int:
+        if delta > 0:
+            return 1
+        elif delta < 0:
+            return -1
+        else:
+            return 0
+
     # Base on strategy it will move differently from other phantoms
     def move(self):
-        try:
-            case_x, case_y = next(self.movements)
-        except StopIteration:
-            return
-        pxl_x = case_x * self.ppc[0] + self.offset[0]
-        pxl_y = case_y * self.ppc[1] + self.offset[1]
-        self.update_hitbox(pxl_x, pxl_y)  # convert x, y in pxl from screen.
+        # try:
+        #     case_x, case_y = next(self.movements)
+        # except StopIteration:
+        #     return
+        i = 0
+        while self.maze_pos != self.path[i]:
+            print(self.maze_pos, '   ', self.path[i])
+            i += 1
+        next_maze_pose = self.path[i + 1]
+        current_pxl_x, current_pxl_y = self.conv.maze_to_pxl(self.maze_pos)
+        next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(next_maze_pose)
+        print("self.y x", self.y, self.x)
+        print("next_pxl", next_pxl_x, next_pxl_y)
+        if (next_pxl_x, next_pxl_y) == (self.y, self.x):
+            self.maze_pos = next_maze_pose
+            next_maze_pose = self.path[i + 2]
+            next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(next_maze_pose)
+        print('path', self.path)
+        print("next", next_maze_pose)
+        print("current", self.maze_pos)
+        self.update_hitbox(next_pxl_x, next_pxl_y)  # convert x, y in pxl from screen.
+        dx = next_pxl_x - self.y
+        dy = next_pxl_y - self.x
+        print("delta", dx, dy)
+        x = self.get_pxl_pos_delta(dx)
+        y = self.get_pxl_pos_delta(dy)
+        print("get pxl pos delta", x, y)
+        self.x += y
+        self.y += x
+
+        print("delta pxl", dx, dy)
         # self.movements give position in maze case x, y
 
     def get_sprites(

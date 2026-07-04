@@ -15,4 +15,5 @@ class AggressiveStrategy(Strategy):
         start: tuple[int, int],
         goal: tuple[int, int]
     ) -> list[tuple[int, int]]:
+        # print("==============", start, goal)
         return self.get_path(start, goal)

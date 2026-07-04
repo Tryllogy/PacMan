@@ -24,6 +24,14 @@ class Converter():
     def pxl_to_maze(self, pxl: tuple[int, int]) -> tuple[int, int]:
         pxl_line = pxl[0]
         pxl_col = pxl[1]
-        player_maze_x = (pxl_line - self.offset_w) / self.ppc_w
-        player_maze_y = (pxl_col - self.offset_h) / self.ppc_h
-        return (player_maze_x, player_maze_y)
+        player_maze_x = (pxl_line - self.offset_w) // self.ppc_w
+        player_maze_y = (pxl_col - self.offset_h) // self.ppc_h
+        return (int(player_maze_x), int(player_maze_y))
+
+    def get_offset_case(self, size_img: tuple[int, int], pxl_pos: tuple[float, float]) -> tuple[float, float]:
+        mid_case_x = pxl_pos[0] + self.ppc_w // 2
+        mid_case_y = pxl_pos[1] + self.ppc_h // 2
+        offset_img_x = size_img[0] // 2
+        offset_img_y = size_img[1] // 2
+        result = (mid_case_y - offset_img_y, mid_case_x - offset_img_x)
+        return result
