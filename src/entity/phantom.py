@@ -55,8 +55,8 @@ class Phantom(Entity):
         self.path: list[tuple[int, int]] = []
         self.hitbox: pygame.Rect
 
-    def update_player_pos(self, pos: tuple[int, int]) -> None:
-        self.player_maze_pos = pos
+    def update_target_pos(self, pos: tuple[int, int]) -> None:
+        self.target_maze_pos = pos
 
     def change_strategy(
             self,
@@ -77,7 +77,7 @@ class Phantom(Entity):
     def update_path(self) -> None:
         self.path = self.strategy.movement(
             self.maze_pos,
-            self.player_maze_pos
+            self.target_maze_pos
         )
         self.movements = self.gen_move(self.path)
 
@@ -112,16 +112,6 @@ class Phantom(Entity):
 
     # Base on strategy it will move differently from other phantoms
     def move(self):
-        # try:
-        #     case_x, case_y = next(self.movements)
-        # except StopIteration:
-        #     return
-        # i = 0
-        # print("self.maze_pos", self.maze_pos)
-        # if self.next_maze_pos == self.maze_pos:
-        #     while self.maze_pos != self.path[i]:
-        #         i += 1
-        #     self.next_maze_pos = self.path[i + 1]
         if self.next_maze_pos == self.maze_pos:
             self.next_maze_pos = self.get_next_pos()
         next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
@@ -133,7 +123,6 @@ class Phantom(Entity):
             except ErrorPhant:
                 self.update_path()
                 self.next_maze_pos = self.get_next_pos()
-            # self.next_maze_pos = self.path[i + 2]
             next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
         self.update_hitbox(next_pxl_x, next_pxl_y)  # convert x, y in pxl from screen.
         dx = next_pxl_x - self.x
@@ -142,8 +131,6 @@ class Phantom(Entity):
         y = self.get_pxl_pos_delta(dy)
         self.x += x
         self.y += y
-
-        # self.movements give position in maze case x, y
 
     def get_sprites(
         self

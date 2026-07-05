@@ -250,14 +250,14 @@ class InGameScene(Scene):
         x = len(self.maze_gen.maze[0]) - 1
         screen_pxl_w, screen_pxl_h = self.screen.get_size()
         maze_pxl_h, maze_pxl_w = self.maze_size_px
-        self.phantoms.append(Phantom(
-            0 + self.offset[0] + offset_phantom,
-            0 + self.offset[1] + offset_phantom,
-            AggressiveStrategy(self.maze_gen.maze),
-            "purple",
-            (0, 0),
-            self.converter
-        ))
+        # self.phantoms.append(Phantom(
+        #     0 + self.offset[0] + offset_phantom,
+        #     0 + self.offset[1] + offset_phantom,
+        #     AggressiveStrategy(self.maze_gen.maze),
+        #     "purple",
+        #     (0, 0),
+        #     self.converter
+        # ))
         # self.phantoms.append(Phantom(
         #     mx + self.offset[0] + offset_phantom,
         #     my + self.offset[1] + offset_phantom,
@@ -266,14 +266,14 @@ class InGameScene(Scene):
         #     (x, y),
         #     self.converter
         # ))
-        # self.phantoms.append(Phantom(
-        #     0 + self.offset[0] + offset_phantom,
-        #     my + self.offset[1] + offset_phantom,
-        #     RandomStrategy(self.maze_gen.maze, (x, 0)),
-        #     "blue",
-        #     (x, 0),
-        #     self.converter
-        # ))
+        self.phantoms.append(Phantom(
+            0 + self.offset[0] + offset_phantom,
+            my + self.offset[1] + offset_phantom,
+            RandomStrategy(self.maze_gen.maze, (x, 0)),
+            "blue",
+            (x, 0),
+            self.converter
+        ))
         # self.phantoms.append(Phantom(
         #     my + self.offset[0] + offset_phantom,
         #     mx + self.offset[1] + offset_phantom,
