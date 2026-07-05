@@ -103,30 +103,25 @@ class Phantom(Entity):
         # except StopIteration:
         #     return
         i = 0
+        print("self.maze_pos", self.maze_pos)
         while self.maze_pos != self.path[i]:
-            print(self.maze_pos, '   ', self.path[i])
             i += 1
         next_maze_pose = self.path[i + 1]
-        current_pxl_x, current_pxl_y = self.conv.maze_to_pxl(self.maze_pos)
         next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(next_maze_pose)
-        print("self.y x", self.y, self.x)
-        print("next_pxl", next_pxl_x, next_pxl_y)
-        if (next_pxl_x, next_pxl_y) == (self.y, self.x):
+        print("next px x-y", next_pxl_x, next_pxl_y)
+        print("self pos pxl x-y", self.x, self.y)
+        print("self.path", self.path)
+        if (next_pxl_x, next_pxl_y) == (self.x, self.y):
             self.maze_pos = next_maze_pose
             next_maze_pose = self.path[i + 2]
             next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(next_maze_pose)
-        print('path', self.path)
-        print("next", next_maze_pose)
-        print("current", self.maze_pos)
         self.update_hitbox(next_pxl_x, next_pxl_y)  # convert x, y in pxl from screen.
-        dx = next_pxl_x - self.y
-        dy = next_pxl_y - self.x
-        print("delta", dx, dy)
+        dx = next_pxl_x - self.x
+        dy = next_pxl_y - self.y
         x = self.get_pxl_pos_delta(dx)
         y = self.get_pxl_pos_delta(dy)
-        print("get pxl pos delta", x, y)
-        self.x += y
-        self.y += x
+        self.x += x
+        self.y += y
 
         print("delta pxl", dx, dy)
         # self.movements give position in maze case x, y

@@ -10,8 +10,8 @@ class Strategy(ABC):
             name: str
     ):
         self.name: str = name
-        self.map_grid: list[list[int]] = self.reverse(map_grid)
-        # self.map_grid: list[list[int]] = map_grid
+        # self.map_grid: list[list[int]] = self.reverse(map_grid)
+        self.map_grid: list[list[int]] = map_grid
 
     def get_path(
         self,
@@ -36,9 +36,8 @@ class Strategy(ABC):
                     heapq.heappush(open_heap, (tentative_g, adj))
         result = self.build_path(current, parent)
         result.append(goal)
-        print("werers", result)
-        result = list(map(lambda x: (x[1], x[0]), result)) #  not sure
-        print(result)
+        # print("werers", result)
+        # result = list(map(lambda x: (x[1], x[0]), result)) #  not sure
         return result
 
     def build_path(
@@ -74,16 +73,16 @@ class Strategy(ABC):
         map_maze: list[list[int]]
     ) -> list[tuple[int, int]]:
         result = []
-        x, y = pos
-        value = format(map_maze[x][y], '04b')
+        line, col = pos
+        value = format(map_maze[line][col], '04b')
         if value[0] == '0':
-            result.append((x - 1, y))
+            result.append((line, col - 1))
         if value[1] == '0':
-            result.append((x, y + 1))
+            result.append((line + 1, col))
         if value[2] == '0':
-            result.append((x + 1, y))
+            result.append((line, col + 1))
         if value[3] == '0':
-            result.append((x, y - 1))
+            result.append((line - 1, col))
         return result
 
     def get_cost(

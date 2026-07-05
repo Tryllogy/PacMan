@@ -56,7 +56,7 @@ class InGameScene(Scene):
     ) -> str:
         for phantom in self.phantoms:
             player_pos = self.converter.pxl_to_maze(
-                (self.player.y, self.player.x))
+                (self.player.x, self.player.y))
             phantom.update(player_pos)
 
         self.player.update(self.walls, self.pacgums, self.super_pacgums,

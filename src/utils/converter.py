@@ -17,16 +17,16 @@ class Converter():
         self.offset_w = (self.screen_w - self.maze_w_pxl) / 2
 
     def maze_to_pxl(self, case: tuple[int, int]) -> tuple[int, int]:
-        pxl_line = case[0] * self.ppc_w + self.offset_w
-        pxl_col = case[1] * self.ppc_h + self.offset_h
-        return (pxl_line, pxl_col)
+        pxl_y = case[0] * self.ppc_w + self.offset_w
+        pxl_x = case[1] * self.ppc_h + self.offset_h
+        return (pxl_x, pxl_y)
 
     def pxl_to_maze(self, pxl: tuple[int, int]) -> tuple[int, int]:
-        pxl_line = pxl[0]
-        pxl_col = pxl[1]
-        player_maze_x = (pxl_line - self.offset_w) // self.ppc_w
-        player_maze_y = (pxl_col - self.offset_h) // self.ppc_h
-        return (int(player_maze_x), int(player_maze_y))
+        pxl_x = pxl[0]
+        pxl_y = pxl[1]
+        player_maze_col = (pxl_x - self.offset_h) // self.ppc_h
+        player_maze_line = (pxl_y - self.offset_w) // self.ppc_w
+        return (int(player_maze_line), int(player_maze_col))
 
     def get_offset_case(self, size_img: tuple[int, int], pxl_pos: tuple[float, float]) -> tuple[float, float]:
         mid_case_x = pxl_pos[0] + self.ppc_w // 2
@@ -35,3 +35,13 @@ class Converter():
         offset_img_y = size_img[1] // 2
         result = (mid_case_y - offset_img_y, mid_case_x - offset_img_x)
         return result
+
+
+
+if __name__ == "__main__":
+    conv = Converter((9, 9), (360, 360), (1920, 1080))
+    maze = (1, 0)
+    pxl = conv.maze_to_pxl(maze)
+    print(pxl)
+    maze = conv.pxl_to_maze(pxl)
+    print(maze)
