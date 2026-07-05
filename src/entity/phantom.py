@@ -8,6 +8,11 @@ import pygame
 from .. import constant
 
 
+class ErrorPhant(Exception):
+    def __init__(self, *args: str):
+        super().__init__(*args)
+
+
 class PhantomColor(Enum):
     PURPLE: str = "purple"
     BLUE: str = "blue"
@@ -45,6 +50,7 @@ class Phantom(Entity):
         self.direction: Direction = Direction.RIGHT
         self.next_direction: Direction = self.direction
         self.maze_pos: tuple[int, int] = maze_pos
+        self.next_maze_pos: tuple[int, int] = maze_pos
         self.conv = conv
         self.path: list[tuple[int, int]] = []
         self.hitbox: pygame.Rect
@@ -96,25 +102,39 @@ class Phantom(Entity):
         else:
             return 0
 
+    def get_next_pos(self) -> tuple[int, int]:
+        i = 0
+        while i < len(self.path) and self.maze_pos != self.path[i]:
+            i += 1
+        if i + 1 < len(self.path):
+            return self.path[i + 1]
+        raise ErrorPhant(f"next pos not found path = {self.path} \ncurrent pos = {self.maze_pos}")
+
     # Base on strategy it will move differently from other phantoms
     def move(self):
         # try:
         #     case_x, case_y = next(self.movements)
         # except StopIteration:
         #     return
-        i = 0
-        print("self.maze_pos", self.maze_pos)
-        while self.maze_pos != self.path[i]:
-            i += 1
-        next_maze_pose = self.path[i + 1]
-        next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(next_maze_pose)
-        print("next px x-y", next_pxl_x, next_pxl_y)
-        print("self pos pxl x-y", self.x, self.y)
-        print("self.path", self.path)
+        # i = 0
+        # print("self.maze_pos", self.maze_pos)
+        # if self.next_maze_pos == self.maze_pos:
+        #     while self.maze_pos != self.path[i]:
+        #         i += 1
+        #     self.next_maze_pos = self.path[i + 1]
+        if self.next_maze_pos == self.maze_pos:
+            self.next_maze_pos = self.get_next_pos()
+        next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
+        next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(self.current_sprite.get_size(), next_pxl_coord)
         if (next_pxl_x, next_pxl_y) == (self.x, self.y):
-            self.maze_pos = next_maze_pose
-            next_maze_pose = self.path[i + 2]
-            next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(next_maze_pose)
+            self.maze_pos = self.next_maze_pos
+            try:
+                self.next_maze_pos = self.get_next_pos()
+            except ErrorPhant:
+                self.update_path()
+                self.next_maze_pos = self.get_next_pos()
+            # self.next_maze_pos = self.path[i + 2]
+            next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
         self.update_hitbox(next_pxl_x, next_pxl_y)  # convert x, y in pxl from screen.
         dx = next_pxl_x - self.x
         dy = next_pxl_y - self.y
@@ -123,7 +143,6 @@ class Phantom(Entity):
         self.x += x
         self.y += y
 
-        print("delta pxl", dx, dy)
         # self.movements give position in maze case x, y
 
     def get_sprites(

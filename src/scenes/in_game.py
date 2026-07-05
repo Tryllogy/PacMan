@@ -248,8 +248,8 @@ class InGameScene(Scene):
         my -= constant.WALL_HEIGHT
         y = len(self.maze_gen.maze) - 1
         x = len(self.maze_gen.maze[0]) - 1
-        # screen_pxl_w, screen_pxl_h = self.screen.get_size()
-        # maze_pxl_h, maze_pxl_w = self.maze_size_px
+        screen_pxl_w, screen_pxl_h = self.screen.get_size()
+        maze_pxl_h, maze_pxl_w = self.maze_size_px
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             0 + self.offset[1] + offset_phantom,
@@ -260,10 +260,10 @@ class InGameScene(Scene):
         ))
         # self.phantoms.append(Phantom(
         #     mx + self.offset[0] + offset_phantom,
-        #     0 + self.offset[1] + offset_phantom,
+        #     my + self.offset[1] + offset_phantom,
         #     AggressiveStrategy(self.maze_gen.maze),
         #     "green",
-        #     (0, 0),
+        #     (x, y),
         #     self.converter
         # ))
         # self.phantoms.append(Phantom(
