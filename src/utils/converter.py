@@ -22,9 +22,9 @@ class Converter():
         self.offset_w = (self.screen_w - self.maze_w_pxl) / 2
 
     def maze_to_pxl(self, case: tuple[int, int]) -> tuple[int, int]:
-        pxl_y = case[0] * self.ppc_w + self.offset_w
+        pxl_y = case[0] * self.ppc_w + self.offset_w + constant.WALL_WIDTH * 1.3
         # pxl_y = case[0] * (self.ppc_w + constant.WALL_WIDTH) + self.offset_w
-        pxl_x = case[1] * self.ppc_h + self.offset_h
+        pxl_x = case[1] * self.ppc_h + self.offset_h + constant.WALL_WIDTH * 1.3
         # pxl_x = case[1] * (self.ppc_h + constant.WALL_WIDTH) + self.offset_h
         return (pxl_x, pxl_y)
 
@@ -40,8 +40,10 @@ class Converter():
         mid_case_y = pxl_pos[1] + self.ppc_w // 2
         offset_img_x = size_img[0] // 2
         offset_img_y = size_img[1] // 2
-        x = constant.WALL_WIDTH / 2 + mid_case_x - offset_img_x
-        y = constant.WALL_WIDTH / 2 + mid_case_y - offset_img_y
+        x = constant.WALL_WIDTH // 2 + mid_case_x - offset_img_x - constant.WALL_WIDTH * 1.3
+        # x = mid_case_x - offset_img_x - constant.WALL_WIDTH * 1.3
+        y = constant.WALL_WIDTH // 2 + mid_case_y - offset_img_y - constant.WALL_WIDTH * 1.3
+        # y = mid_case_y - offset_img_y - constant.WALL_WIDTH * 1.3
         result = (x, y)
         return result
 

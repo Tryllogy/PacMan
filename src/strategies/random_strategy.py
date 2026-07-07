@@ -14,15 +14,7 @@ class RandomStrategy(Strategy):
         self.target: tuple[int, int] = phantom_pos
         self.path: list[tuple[int, int]] = []
 
-    # Will take a point in maze a move to
-    def movement(
-        self,
-        start: tuple[int, int],
-        goal: tuple[int, int]
-    ) -> list[tuple[int, int]]:
-        if self.target != self.phantom_pos:
-            self.phantom_pos = start
-            return self.path
+    def get_goal(self):
         available_points: list[tuple[int, int]] = []
         for y, row in enumerate(self.map_grid):
             for x, cell in enumerate(row):
@@ -30,6 +22,21 @@ class RandomStrategy(Strategy):
                     continue
                 available_points.append((x, y))
         goal = random.choice(available_points)
+        return goal
+
+    # Will take a point in maze a move to
+    def movement(
+        self,
+        start: tuple[int, int],
+        goal: tuple[int, int]
+    ) -> list[tuple[int, int]]:
+        self.phantom_pos = start
+        print(self.target, self.phantom_pos)
+        if self.target != self.phantom_pos:
+            return self.path
+        goal = self.get_goal()
         self.target = goal
         self.path = self.get_path(start, goal)
+        # print("self.path", self.path)
+        # print("self.target", self.target)
         return self.path
