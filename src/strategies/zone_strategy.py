@@ -38,8 +38,10 @@ class ZoneStrategy(Strategy):
     def make_zone(
         self,
     ) -> bool:
-        start_x, end_x = random.sample(self.possible_x, 2)
-        start_y, end_y = random.sample(self.possible_y, 2)
+        x = random.sample(self.possible_x, 2)
+        y = random.sample(self.possible_y, 2)
+        start_x, end_x = min(x), max(x)
+        start_y, end_y = min(y), max(y)
         self.zone = []
         for i in range(start_x, end_x):
             for j in range(start_y, end_y):

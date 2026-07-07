@@ -2,7 +2,7 @@ from mazegenerator import MazeGenerator
 from ..utils.converter import Converter
 from ..parsing import Data
 from .scene import Scene, GameState
-from ..strategies import (AggressiveStrategy, RandomStrategy)
+from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy)
 from ..entity import (Phantom, Player, Direction,
                       Wall, Pacgum, SuperPacgum, Score)
 from .. import constant
@@ -105,6 +105,10 @@ class InGameScene(Scene):
                     self.timer -= 1
                     if self.timer <= 0:
                         self.current_scene = GameState.LOSE.value
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+                self.player.invincible = not self.player.invincible
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                self.new_level()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.current_scene = GameState.PAUSE.value
             if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
@@ -258,26 +262,26 @@ class InGameScene(Scene):
         #     (0, 0),
         #     self.converter
         # ))
-        # self.phantoms.append(Phantom(
-        #     mx + self.offset[0] + offset_phantom,
-        #     my + self.offset[1] + offset_phantom,
-        #     AggressiveStrategy(self.maze_gen.maze),
-        #     "green",
-        #     (x, y),
-        #     self.converter
-        # ))
         self.phantoms.append(Phantom(
-            0 + self.offset[0] + offset_phantom,
+            mx + self.offset[0] + offset_phantom,
             my + self.offset[1] + offset_phantom,
-            RandomStrategy(self.maze_gen.maze, (x, 0)),
-            "blue",
-            (x, 0),
+            AggressiveStrategy(self.maze_gen.maze),
+            "green",
+            (x, y),
             self.converter
         ))
         # self.phantoms.append(Phantom(
+        #     0 + self.offset[0] + offset_phantom,
+        #     my + self.offset[1] + offset_phantom,
+        #     RandomStrategy(self.maze_gen.maze, (x, 0)),
+        #     "blue",
+        #     (x, 0),
+        #     self.converter
+        # ))
+        # self.phantoms.append(Phantom(
         #     my + self.offset[0] + offset_phantom,
         #     mx + self.offset[1] + offset_phantom,
-        #     RandomStrategy(self.maze_gen.maze, (0, y)),
+        #     ZoneStrategy(self.maze_gen.maze, (0, y)),
         #     "red",
         #     (0, y),
         #     self.converter

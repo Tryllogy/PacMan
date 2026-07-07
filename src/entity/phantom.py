@@ -1,5 +1,5 @@
-from ..strategies import Strategy
-from .entity import Entity, Direction
+from ..strategies import Strategy, RetreatStrategy
+from .entity import Entity
 from enum import Enum
 from typing import Generator
 from ..utils import Converter
@@ -43,28 +43,26 @@ class Phantom(Entity):
         if color not in PhantomColor.ALL_COLORS.value:
             raise ValueError("Phantom is not a color that is supported")
         self.strategy: Strategy = strategy
+        self.original_strategy: Strategy = strategy
         self.color: str = color
+        self.sprites_dimensions: list[tuple[int, int]] = []
         self.sprites: list[pygame.Surface] = self.get_sprites()
         self.sprite_index: int = 0
-        self.current_sprite: pygame.Surface = self.sprites[self.sprite_index]
-        self.direction: Direction = Direction.RIGHT
-        self.next_direction: Direction = self.direction
         self.maze_pos: tuple[int, int] = maze_pos
+        self.spawn_maze_pos: tuple[int, int] = maze_pos
         self.next_maze_pos: tuple[int, int] = maze_pos
-        self.conv = conv
+        self.conv: Converter = conv
         self.path: list[tuple[int, int]] = []
         self.hitbox: pygame.Rect
+        self.retreat: bool = False
 
     def update_target_pos(self, pos: tuple[int, int]) -> None:
         self.target_maze_pos = pos
 
-    def change_strategy(
-            self,
-            strategy: Strategy
-    ):
-        if not isinstance(strategy, Strategy):
-            raise TypeError(f"Not a valid strategy: {strategy}")
-        self.strategy = strategy
+    def set_retreat_strategy(self) -> None:
+        self.strategy = RetreatStrategy(self.strategy.map_grid)
+        self.retreat = True
+        self.start_time = pygame.time.get_ticks()
 
     def gen_move(
         self,
@@ -86,12 +84,12 @@ class Phantom(Entity):
             x: int,
             y: int
             ) -> None:
-        w, h = self.current_sprite.get_size()
+        w, h = self.sprites_dimensions[self.sprite_index]
         self.hitbox: pygame.Rect = pygame.Rect(
-            x,
-            y,
-            w,
-            h
+            x + w // 4,
+            y + h // 4,
+            w // 2,
+            h // 2
         )
 
     def get_pxl_pos_delta(self, delta: float) -> int:
@@ -108,14 +106,16 @@ class Phantom(Entity):
             i += 1
         if i + 1 < len(self.path):
             return self.path[i + 1]
-        raise ErrorPhant(f"next pos not found path = {self.path} \ncurrent pos = {self.maze_pos}")
+        raise ErrorPhant(f"next pos not found path = {self.path} \n"
+                         f"current pos = {self.maze_pos}")
 
     # Base on strategy it will move differently from other phantoms
     def move(self):
         if self.next_maze_pos == self.maze_pos:
             self.next_maze_pos = self.get_next_pos()
         next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
-        next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(self.current_sprite.get_size(), next_pxl_coord)
+        next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(
+            self.sprites_dimensions[self.sprite_index], next_pxl_coord)
         if (next_pxl_x, next_pxl_y) == (self.x, self.y):
             self.maze_pos = self.next_maze_pos
             try:
@@ -124,7 +124,7 @@ class Phantom(Entity):
                 self.update_path()
                 self.next_maze_pos = self.get_next_pos()
             next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
-        self.update_hitbox(next_pxl_x, next_pxl_y)  # convert x, y in pxl from screen.
+        self.update_hitbox(next_pxl_x, next_pxl_y)
         dx = next_pxl_x - self.x
         dy = next_pxl_y - self.y
         x = self.get_pxl_pos_delta(dx)
@@ -146,6 +146,7 @@ class Phantom(Entity):
                     sprites[-1],
                     (constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5,
                      constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5))
+                self.sprites_dimensions.append(sprites[-1].get_size())
         return sprites
 
     def draw(
@@ -153,25 +154,35 @@ class Phantom(Entity):
         screen: pygame.Surface
     ) -> None:
         self.change_sprite()
-        screen.blit(self.current_sprite, (self.x, self.y))
+        screen.blit(self.sprites[self.sprite_index], (self.x, self.y))
 
     def change_sprite(
         self
     ) -> None:
-        if self.direction == Direction.DOWN:
-            self.sprite_index = 0
-        elif self.direction == Direction.LEFT:
+        ax, ay = self.maze_pos
+        try:
+            nx, ny = self.next_maze_pos
+        except ErrorPhant:
+            nx, ny = self.maze_pos
+        if ay < ny:
             self.sprite_index = 1
-        elif self.direction == Direction.RIGHT:
+        elif ay > ny:
             self.sprite_index = 2
-        elif self.direction == Direction.UP:
+        elif ax < nx:
             self.sprite_index = 3
+        elif ax > nx:
+            self.sprite_index = 0
 
     def update(
         self,
         player_pos
     ) -> None:
-        self.update_player_pos(player_pos)
+        if self.retreat:
+            tick = pygame.time.get_ticks()
+            if tick - self.start_time >= self.strategy.duration:
+                self.retreat = False
+                self.strategy = self.original_strategy
+        self.update_target_pos(player_pos)
         self.update_path()
         self.move()
 
@@ -180,5 +191,5 @@ class Phantom(Entity):
     ) -> None:
         self.x = self.spawn_x
         self.y = self.spawn_y
-        self.maze_pos = (self.spawn_x // self.ppc[0],
-                         self.spawn_y // self.ppc[1])
+        self.maze_pos = self.spawn_maze_pos
+        self.retreat = False

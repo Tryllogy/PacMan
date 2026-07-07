@@ -26,7 +26,10 @@ class InstructionsScene(Scene):
             "Instructions:\n"
             "Use the arrow keys to move Pac-Man.\n"
             "Eat all the dots to win!\n"
-            "Avoid the ghosts or you'll lose a life."
+            "Avoid the ghosts or you'll lose a life.\n"
+            "Press 'I' to toggle invincibility.\n"
+            "Press 'P' to start a new level.\n"
+            "Press 'ESC' to pause the game."
         )
         self.instructions_lines: list[str] = self.instructions_text.split("\n")
         self.instructions_surfaces: list[pygame.Surface] = [

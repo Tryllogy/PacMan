@@ -10,8 +10,8 @@ class Strategy(ABC):
             name: str
     ):
         self.name: str = name
-        # self.map_grid: list[list[int]] = self.reverse(map_grid)
         self.map_grid: list[list[int]] = map_grid
+        self.duration: int = 5000
 
     def get_path(
         self,
@@ -36,8 +36,6 @@ class Strategy(ABC):
                     heapq.heappush(open_heap, (tentative_g, adj))
         result = self.build_path(current, parent)
         result.append(goal)
-        # print("werers", result)
-        # result = list(map(lambda x: (x[1], x[0]), result)) #  not sure
         return result
 
     def build_path(

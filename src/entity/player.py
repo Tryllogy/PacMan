@@ -7,6 +7,7 @@ from .pacgum import Pacgum
 from .superpacgum import SuperPacgum
 from .score import Score
 from .. import constant
+from ..strategies import RetreatStrategy
 
 
 class Player(Entity):
@@ -149,12 +150,11 @@ class Player(Entity):
             self.score.score += self.points_per_super_pacgum
             super_pacgums.remove(self.check_collision(self.x, self.y,
                                                       super_pacgums)[1])
+            for phantom in phantoms:
+                phantom.set_retreat_strategy()
         if self.check_collision_with_phantoms(self.x, self.y, phantoms)[0]:
             self.lives -= 1
-            self.x = self.spawn_x
-            self.y = self.spawn_y
-            self.direction = Direction.NONE
-            self.next_direction = Direction.NONE
+            self.reset_positions(phantoms)
 
     def reset_positions(
         self,
