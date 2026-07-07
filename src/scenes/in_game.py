@@ -260,30 +260,30 @@ class InGameScene(Scene):
             (0, 0),
             self.converter
         ))
-        self.phantoms.append(Phantom(
-            mx + self.offset[0] + offset_phantom,
-            0 + self.offset[1] + offset_phantom,
-            AggressiveStrategy(self.maze_gen.maze),
-            "green",
-            (0, y),
-            self.converter
-        ))
-        self.phantoms.append(Phantom(
-            0 + self.offset[0] + offset_phantom,
-            my + self.offset[1] + offset_phantom,
-            RandomStrategy(self.maze_gen.maze, (x, 0)),
-            "blue",
-            (x, 0),
-            self.converter
-        ))
-        self.phantoms.append(Phantom(
-            my + self.offset[0] + offset_phantom,
-            mx + self.offset[1] + offset_phantom,
-            ZoneStrategy(self.maze_gen.maze, (0, y)),
-            "red",
-            (x, y),
-            self.converter
-        ))
+        # self.phantoms.append(Phantom(
+        #     mx + self.offset[0] + offset_phantom,
+        #     0 + self.offset[1] + offset_phantom,
+        #     AggressiveStrategy(self.maze_gen.maze),
+        #     "green",
+        #     (0, y),
+        #     self.converter
+        # ))
+        # self.phantoms.append(Phantom(
+        #     0 + self.offset[0] + offset_phantom,
+        #     my + self.offset[1] + offset_phantom,
+        #     RandomStrategy(self.maze_gen.maze, (x, 0)),
+        #     "blue",
+        #     (x, 0),
+        #     self.converter
+        # ))
+        # self.phantoms.append(Phantom(
+        #     my + self.offset[0] + offset_phantom,
+        #     mx + self.offset[1] + offset_phantom,
+        #     ZoneStrategy(self.maze_gen.maze, (0, y)),
+        #     "red",
+        #     (x, y),
+        #     self.converter
+        # ))
 
     def make_wall(
         self

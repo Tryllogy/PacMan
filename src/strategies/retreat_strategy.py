@@ -17,7 +17,7 @@ class RetreatStrategy(Strategy):
             tuple[int, int],
             tuple[int, int]]
     ) -> list[tuple[int, int]]:
-        result = []
+        result = [pos]
         tmp = pos
         rev_parents = {v: k for k, v in parents.items()}
         while rev_parents.get(tmp) is not None:
@@ -39,7 +39,6 @@ class RetreatStrategy(Strategy):
         q.append(goal)
         result = []
         parents = {}
-
         while q:
             curr = q.popleft()
             result.append(curr)

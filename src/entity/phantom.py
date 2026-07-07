@@ -62,7 +62,9 @@ class Phantom(Entity):
     def set_retreat_strategy(self) -> None:
         self.strategy = RetreatStrategy(self.strategy.map_grid)
         self.retreat = True
+        self.next_maze_pos = self.maze_pos
         self.start_time = pygame.time.get_ticks()
+        self.update_path()
 
     def gen_move(
         self,
@@ -101,18 +103,20 @@ class Phantom(Entity):
             return 0
 
     def get_next_pos(self) -> tuple[int, int]:
-        i = 0
-        while i < len(self.path) and self.maze_pos != self.path[i]:
-            i += 1
-        if i + 1 < len(self.path):
-            return self.path[i + 1]
-        raise ErrorPhant(f"next pos not found path = {self.path} \n"
-                         f"current pos = {self.maze_pos}")
+        try:
+            next_pos: tuple[int, int] = next(self.movements)
+            return next_pos
+        except StopIteration:
+            raise ErrorPhant("No more movements available")
 
     # Base on strategy it will move differently from other phantoms
     def move(self):
         if self.next_maze_pos == self.maze_pos:
-            self.next_maze_pos = self.get_next_pos()
+            try:
+                self.next_maze_pos = self.get_next_pos()
+            except ErrorPhant:
+                self.update_path()
+                self.next_maze_pos = self.get_next_pos()
         next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
         next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(
             self.sprites_dimensions[self.sprite_index], next_pxl_coord)
@@ -182,8 +186,10 @@ class Phantom(Entity):
             if tick - self.start_time >= self.strategy.duration:
                 self.retreat = False
                 self.strategy = self.original_strategy
+                self.next_maze_pos = self.maze_pos
         self.update_target_pos(player_pos)
-        self.update_path()
+        if len(self.path) == 0 or self.maze_pos == self.next_maze_pos:
+            self.update_path()
         self.move()
 
     def reset_position(
@@ -193,4 +199,5 @@ class Phantom(Entity):
         self.y = self.spawn_y
         self.maze_pos = self.spawn_maze_pos
         self.strategy = self.original_strategy
+        self.next_maze_pos = self.maze_pos
         self.retreat = False
