@@ -192,4 +192,5 @@ class Phantom(Entity):
         self.x = self.spawn_x
         self.y = self.spawn_y
         self.maze_pos = self.spawn_maze_pos
+        self.strategy = self.original_strategy
         self.retreat = False

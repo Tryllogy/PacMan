@@ -36,7 +36,9 @@ class EndScene(Scene):
 
     def write_name_to_file(
         self
-    ) -> None:
+    ) -> bool:
+        if len(self.name_user) == 0:
+            return False
         file_path = os.path.join(constant.SCORE_DIR,
                                  self.config.highscore_filename)
         if not os.path.exists(constant.SCORE_DIR):
@@ -54,6 +56,7 @@ class EndScene(Scene):
         with open(file_path, "w") as f:
             json.dump(scores, f, indent=4)
         self.name_user = ""
+        return True
 
     def draw_name_user_text(
         self
@@ -75,12 +78,14 @@ class EndScene(Scene):
                     pygame.quit()
                     sys.exit(0)
                 if event.key == pygame.K_BACKSPACE:
-                    self.name_user = self.name_user[:-1]
+                    if len(self.name_user) > 0:
+                        self.name_user = self.name_user[:-1]
                 elif event.key == pygame.K_RETURN:
-                    self.write_name_to_file()
-                    return GameState.MAIN.value
+                    if self.write_name_to_file():
+                        return GameState.MAIN.value
                 else:
-                    self.name_user += event.unicode
+                    if len(self.name_user) <= 5:
+                        self.name_user += event.unicode
         return self.current_scene
 
     def draw(
