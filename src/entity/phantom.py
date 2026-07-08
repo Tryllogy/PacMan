@@ -50,7 +50,7 @@ class Phantom(Entity):
         self.sprite_index: int = 0
         self.maze_pos: tuple[int, int] = maze_pos
         self.spawn_maze_pos: tuple[int, int] = maze_pos
-        # self.next_maze_pos: tuple[int, int] = maze_pos
+        self.next_maze_pos: tuple[int, int] = maze_pos
         self.conv: Converter = conv
         self.path: list[tuple[int, int]] = []
         self.retreat: bool = False
@@ -77,11 +77,13 @@ class Phantom(Entity):
         return None
 
     def update_path(self) -> None:
-        self.path = self.strategy.movement(
+        tmp = self.strategy.movement(
             self.maze_pos,
             self.target_maze_pos
         )
-        self.movements = self.gen_move(self.path[1:])
+        if tmp != self.path:
+            self.path = tmp
+            self.movements = self.gen_move(self.path[1:])
 
     def update_hitbox(
             self,
@@ -114,20 +116,27 @@ class Phantom(Entity):
     # Base on strategy it will move differently from other phantoms
     # il faut remetre self.next_maze_pos
     def move(self):
-        # if self.next_maze_pos == self.maze_pos:
-        # try:
-        #     self.next_maze_pos = self.get_next_pos()
-        # except StopIteration:
-        #     return
-        next_pxl_coord = self.conv.maze_to_pxl(self.maze_pos)
-        next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(
-            self.sprites_dimensions[self.sprite_index], next_pxl_coord)
-        if (self.x, self.y) == (next_pxl_x, next_pxl_y):
+        # print("current pos", self.maze_pos)
+        # print("next pos", self.next_maze_pos)
+        # print("x, y:", self.x, self.y)
+        # print("path", self.path)
+        if self.next_maze_pos == self.maze_pos:
             self.update_path()
             try:
-                self.maze_pos = next(self.movements)
+                self.next_maze_pos = next(self.movements)
             except StopIteration:
                 return
+        next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
+        next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(
+            self.sprites_dimensions[self.sprite_index], next_pxl_coord)
+        # print("next x y :", next_pxl_x, next_pxl_y)
+        # if (self.x, self.y) == (next_pxl_x, next_pxl_y):
+        #     self.maze_pos = self.next_maze_pos
+        #     self.update_path()
+        #     try:
+        #         self.next_maze_pos = next(self.movements)
+        #     except StopIteration:
+        #         return
 
         #     try:
         #         self.next_maze_pos = self.get_next_pos()
@@ -135,8 +144,7 @@ class Phantom(Entity):
         #         self.update_path()
         #         self.next_maze_pos = self.get_next_pos()
         # print(self.next_maze_pos)
-        print(self.path)
-        next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.maze_pos)
+        next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
         self.update_hitbox(next_pxl_x, next_pxl_y)
         dx = next_pxl_x - self.x
         dy = next_pxl_y - self.y
@@ -144,6 +152,8 @@ class Phantom(Entity):
         y = self.get_pxl_pos_delta(dy)
         self.x += x
         self.y += y
+        if (self.x, self.y) == (next_pxl_x, next_pxl_y):
+            self.maze_pos = self.next_maze_pos
         # self.maze_pos = self.next_maze_pos
         # if (next_pxl_x, next_pxl_y) == (self.x, self.y):
         #   self.maze_pos = self.next_maze_pos

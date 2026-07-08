@@ -20,6 +20,8 @@ class RandomStrategy(Strategy):
             for x, cell in enumerate(row):
                 if cell == 15:
                     continue
+                if (x, y) == self.phantom_pos:
+                    continue
                 available_points.append((x, y))
         goal = random.choice(available_points)
         return goal
@@ -31,9 +33,9 @@ class RandomStrategy(Strategy):
         goal: tuple[int, int]
     ) -> list[tuple[int, int]]:
         self.phantom_pos = start
-        print(self.target, self.phantom_pos)
+        # print("target", self.target, "phantome pos", self.phantom_pos)
         if self.target != self.phantom_pos:
-            return self.path
+            return self.path[1:]
         goal = self.get_goal()
         self.target = goal
         self.path = self.get_path(start, goal)
