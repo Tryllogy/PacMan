@@ -29,16 +29,15 @@ class RandomStrategy(Strategy):
     # Will take a point in maze a move to
     def movement(
         self,
-        start: tuple[int, int],
-        goal: tuple[int, int]
+        start: tuple[int, int]
     ) -> list[tuple[int, int]]:
         self.phantom_pos = start
         # print("target", self.target, "phantome pos", self.phantom_pos)
         if self.target != self.phantom_pos:
-            return self.path[1:]
-        goal = self.get_goal()
-        self.target = goal
-        self.path = self.get_path(start, goal)
+            return self.path
+        self.target = self.get_goal()
+        Strategy.set_rand_pos(self.target)
+        self.path = self.get_path(start, 'rand')
         # print("self.path", self.path)
         # print("self.target", self.target)
         return self.path

@@ -78,12 +78,11 @@ class Phantom(Entity):
 
     def update_path(self) -> None:
         tmp = self.strategy.movement(
-            self.maze_pos,
-            self.target_maze_pos
+            self.maze_pos
         )
         if tmp != self.path:
             self.path = tmp
-            self.movements = self.gen_move(self.path[1:])
+            self.movements = self.gen_move(self.path)
 
     def update_hitbox(
             self,
@@ -209,11 +208,8 @@ class Phantom(Entity):
             if tick - self.start_time >= self.strategy.duration:
                 self.retreat = False
                 self.strategy = self.original_strategy
-                self.next_maze_pos = self.maze_pos
-        self.update_target_pos(player_pos)
-        # if self.maze_pos == self.next_maze_pos:
-            # self.update_path()
-            # self.next_maze_pos = next(self.movements)
+                # self.next_maze_pos = self.maze_pos
+        Strategy.set_player_pos(player_pos)
         self.move()
 
     def reset_position(

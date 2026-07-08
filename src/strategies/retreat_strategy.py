@@ -25,37 +25,35 @@ class RetreatStrategy(Strategy):
             result.append(tmp)
         return result
 
-    def get_path(
-        self,
-        start: tuple[int, int],
-        goal: tuple[int, int]
-    ) -> list[tuple[int, int]]:
-        width = len(self.map_grid)
-        heigh = len(self.map_grid[0])
-        x, y = goal
-        visited = [[False] * heigh for i in range(width)]
-        visited[x][y] = True
-        q = deque()
-        q.append(goal)
-        result = []
-        parents = {}
-        while q:
-            curr = q.popleft()
-            result.append(curr)
-            lst_adj = self.get_adj(curr, self.map_grid)
-            for adj in lst_adj:
-                x, y = adj
-                if not visited[x][y]:
-                    parents.update({adj: curr})
-                    visited[x][y] = True
-                    q.append(adj)
-        result = self.build_path(start, parents)
-        return result
+    # def get_path(
+    #     self,
+    #     start: tuple[int, int]
+    # ) -> list[tuple[int, int]]:
+    #     width = len(self.map_grid)
+    #     heigh = len(self.map_grid[0])
+    #     x, y = goal
+    #     visited = [[False] * heigh for i in range(width)]
+    #     visited[x][y] = True
+    #     q = deque()
+    #     q.append(goal)
+    #     result = []
+    #     parents = {}
+    #     while q:
+    #         curr = q.popleft()
+    #         result.append(curr)
+    #         lst_adj = self.get_adj(curr, self.map_grid)
+    #         for adj in lst_adj:
+    #             x, y = adj
+    #             if not visited[x][y]:
+    #                 parents.update({adj: curr})
+    #                 visited[x][y] = True
+    #                 q.append(adj)
+    #     result = self.build_path(start, parents)
+    #     return result
 
     # Will go away as far as possible from the player
     def movement(
         self,
-        start: tuple[int, int],
-        goal: tuple[int, int]
+        start: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        return self.get_path(start, goal)
+        return self.get_path(start, 'retreat')

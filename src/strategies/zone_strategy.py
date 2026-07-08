@@ -26,14 +26,14 @@ class ZoneStrategy(Strategy):
     # used 1 time
     def movement(
         self,
-        start: tuple[int, int],
-        goal: tuple[int, int]
+        start: tuple[int, int]
     ):
-        if len(self.zone) == 0:
-            self.make_zone()
-        goal = random.choice(self.zone)
-        self.zone.remove(goal)
-        return self.get_path(start, goal)
+        pass
+        # if len(self.zone) == 0:
+        #     self.make_zone()
+        # goal = random.choice(self.zone)
+        # self.zone.remove(goal)
+        # return self.get_path(start, goal)
 
     def make_zone(
         self,
