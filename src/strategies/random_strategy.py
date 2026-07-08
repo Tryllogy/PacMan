@@ -37,7 +37,6 @@ class RandomStrategy(Strategy):
             return self.path
         self.target = self.get_goal()
         Strategy.set_rand_pos(self.target)
-        self.path = self.get_path(start, 'rand')
         # print("self.path", self.path)
         # print("self.target", self.target)
-        return self.path
+        return self.get_path(start, 'rand')

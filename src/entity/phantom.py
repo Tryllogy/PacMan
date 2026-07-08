@@ -44,6 +44,7 @@ class Phantom(Entity):
             raise ValueError("Phantom is not a color that is supported")
         self.strategy: Strategy = strategy
         self.original_strategy: Strategy = strategy
+        self.retreat_strategy = RetreatStrategy(self.strategy.map_grid)
         self.color: str = color
         self.sprites_dimensions: list[tuple[int, int]] = []
         self.sprites: list[pygame.Surface] = self.get_sprites()
@@ -55,6 +56,8 @@ class Phantom(Entity):
         self.path: list[tuple[int, int]] = []
         self.retreat: bool = False
         self.update_hitbox(x, y)
+        self.timer = constant.RETREAT_TIME
+        pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
         # print(self.conv.get_coord_sprite(self.sprites[self.sprite_index].get_size(), (x, y)))
         # print((x, y))
 
@@ -62,11 +65,10 @@ class Phantom(Entity):
         self.target_maze_pos = pos
 
     def set_retreat_strategy(self) -> None:
-        self.strategy = RetreatStrategy(self.strategy.map_grid)
-        self.retreat = True
-        # self.next_maze_pos = self.maze_pos
-        self.start_time = pygame.time.get_ticks()
-        # self.update_path()
+        if not self.retreat:
+            self.strategy = self.retreat_strategy
+            self.retreat = True
+        self.timer = constant.RETREAT_TIME
 
     def gen_move(
         self,
@@ -77,12 +79,13 @@ class Phantom(Entity):
         return None
 
     def update_path(self) -> None:
-        tmp = self.strategy.movement(
-            self.maze_pos
-        )
-        if tmp != self.path:
-            self.path = tmp
-            self.movements = self.gen_move(self.path)
+        tmp = self.strategy.movement(self.maze_pos)
+        self.path = tmp
+        self.movements = self.gen_move(self.path)
+        # print("tmp . self.path", tmp, self.path)
+        # if tmp != self.path:
+        #     self.path = tmp
+        #     self.movements = self.gen_move(self.path)
 
     def update_hitbox(
             self,
@@ -120,11 +123,16 @@ class Phantom(Entity):
         # print("x, y:", self.x, self.y)
         # print("path", self.path)
         if self.next_maze_pos == self.maze_pos:
+            # print("current pos, next pos", self.maze_pos, self.next_maze_pos)
+            # print("strat", self.strategy.__class__.__name__)
+            # print("path", self.path)
             self.update_path()
             try:
                 self.next_maze_pos = next(self.movements)
             except StopIteration:
                 return
+        # print("current", self.maze_pos)
+        # print("next", self.next_maze_pos)
         next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
         next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(
             self.sprites_dimensions[self.sprite_index], next_pxl_coord)
@@ -142,7 +150,10 @@ class Phantom(Entity):
         #     except ErrorPhant:
         #         self.update_path()
         #         self.next_maze_pos = self.get_next_pos()
-        # print(self.next_maze_pos)
+        # print("ACTUAL = ", self.maze_pos)
+        # print("NEXT = ", self.next_maze_pos)
+        print(self.strategy.name)
+        print(self.path)
         next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
         self.update_hitbox(next_pxl_x, next_pxl_y)
         dx = next_pxl_x - self.x
@@ -156,7 +167,6 @@ class Phantom(Entity):
         # self.maze_pos = self.next_maze_pos
         # if (next_pxl_x, next_pxl_y) == (self.x, self.y):
         #   self.maze_pos = self.next_maze_pos
-        # print(self.maze_pos)
 
     def get_sprites(
         self
@@ -203,14 +213,13 @@ class Phantom(Entity):
         self,
         player_pos
     ) -> None:
-        if self.retreat:
-            tick = pygame.time.get_ticks()
-            if tick - self.start_time >= self.strategy.duration:
-                self.retreat = False
-                self.strategy = self.original_strategy
-                # self.next_maze_pos = self.maze_pos
         Strategy.set_player_pos(player_pos)
         self.move()
+
+    def reset_strategy(self):
+        self.strategy = self.original_strategy
+        self.retreat = False
+        self.timer = constant.RETREAT_TIME
 
     def reset_position(
         self

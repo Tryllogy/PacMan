@@ -2,7 +2,7 @@ from mazegenerator import MazeGenerator
 from ..utils.converter import Converter
 from ..parsing import Data
 from .scene import Scene, GameState
-from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy)
+from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy, RetreatStrategy)
 from ..entity import (Phantom, Player, Direction,
                       Wall, Pacgum, SuperPacgum, Score)
 from .. import constant
@@ -121,6 +121,13 @@ class InGameScene(Scene):
                 self.player.next_direction = Direction.LEFT
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
                 self.player.next_direction = Direction.RIGHT
+            if event.type == pygame.USEREVENT + 2:
+                for phantom in self.phantoms:
+                    if phantom.retreat:
+                        if phantom.timer > 0:
+                            phantom.timer -= 1
+                            if phantom.timer <= 0:
+                                phantom.reset_strategy()
         return self.current_scene
 
     def draw(
@@ -254,22 +261,22 @@ class InGameScene(Scene):
         my -= constant.WALL_HEIGHT
         x = len(self.maze_gen.maze) - 1
         y = len(self.maze_gen.maze[0]) - 1
-        self.phantoms.append(Phantom(
-            0 + self.offset[0] + offset_phantom,
-            0 + self.offset[1] + offset_phantom,
-            AggressiveStrategy(self.maze_gen.maze),
-            "purple",
-            (0, 0),
-            self.converter
-        ))
         # self.phantoms.append(Phantom(
-        #     mx + self.offset[0] + offset_phantom,
+        #     0 + self.offset[0] + offset_phantom,
         #     0 + self.offset[1] + offset_phantom,
         #     AggressiveStrategy(self.maze_gen.maze),
-        #     "green",
-        #     (0, y),
+        #     "purple",
+        #     (0, 0),
         #     self.converter
         # ))
+        self.phantoms.append(Phantom(
+            mx + self.offset[0] + offset_phantom,
+            0 + self.offset[1] + offset_phantom,
+            AggressiveStrategy(self.maze_gen.maze),
+            "green",
+            (0, y),
+            self.converter
+        ))
         # self.phantoms.append(Phantom(
         #     0 + self.offset[0] + offset_phantom,
         #     my + self.offset[1] + offset_phantom,

@@ -23,5 +23,7 @@ PLAYER_SPEED = 2
 PHANTOM_SPEED = 1.5
 PLAYER_SPRITE_CHANGE_DELAY = 150  # milliseconds
 
+RETREAT_TIME = 5  # seconds
+
 FPS = 60
 SCORE_DIR = "src/score/"

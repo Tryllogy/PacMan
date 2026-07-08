@@ -25,20 +25,26 @@ class Strategy(ABC):
         cls.rand_pos = pos
 
     @classmethod
-    def is_away(cls, parent: tuple[int, int], current: tuple[int, int]) -> bool:
-        par_x, par_y = parent
+    def is_away(cls, start: tuple[int, int], current: tuple[int, int]) -> bool:
+        par_x, par_y = start
         curr_x, curr_y = current
         play_x, play_y = cls.player_pos
         min_x = min(par_x, play_x)
         max_x = max(par_x, play_x)
         min_y = min(par_y, play_y)
         max_y = max(par_y, play_y)
-        range_x = [min_x + i for i in range(0, max_x - min_x)]
-        range_y = [min_y + i for i in range(max_y - min_y)]
-        if curr_x not in range_x:
+        range_x = [min_x + i for i in range(max_x - min_x + 1)]
+        range_y = [min_y + i for i in range(max_y - min_y + 1)]
+        # if curr_x not in range_x or curr_y not in range_y:
+        # print("start", (par_x, par_y))
+        # print("current", (curr_x, curr_y))
+        # print("player", cls.player_pos)
+        # print("range x", range_x)
+        # print("range y", range_y)
+        if (curr_y not in range_y) ^ (curr_x not in range_x):
+            # print('result', True)
             return True
-        elif curr_y not in range_y:
-            return True
+        # print('result', False)
         return False
 
     def get_path(
@@ -58,12 +64,14 @@ class Strategy(ABC):
         stop_retreat = False
         visited = [[False] * len(self.map_grid) for i in range(len(self.map_grid[0]))]
         visited[start[0]][start[1]] = True
-        tmp = start
+        i = 0
         while open_heap:
+            i += 1
             cost, current = heapq.heappop(open_heap)
-            if (goal != start and current == goal) or stop_retreat is True:
+            if (goal != start and current == goal):  # or stop_retreat is True:
                 break
             lst_adj = self.get_adj(current, self.map_grid)
+            # print(f"============={i}")
             for adj in lst_adj:
                 # if tmp != start and tmp == adj:
                 #     print("test")
@@ -74,15 +82,26 @@ class Strategy(ABC):
                     visited[adj[0]][adj[1]] = True
                     g_cost[adj] = tentative_g
                     parent[adj] = current
-                    if strat == 'retreat' and Strategy.is_away(start, current):
-                        stop_retreat = True
-                        break
                     heapq.heappush(open_heap, (tentative_g, adj))
-            tmp = current
+                    if strat == 'retreat' and Strategy.is_away(start, adj) and not stop_retreat:
+                        # stop_retreat = True
+                        goal = adj
+            # print("current", current)
+            # print("adj", lst_adj)
+            if strat == 'retreat':
+                break
+        #  if any de lst adj not, return none et reste sur place puis reactualise
+        print(parent.get(current))
         result = self.build_path(current, parent)
-        if goal != start:
+        if result[0] == start:
+            result.pop(0)
+        if not stop_retreat:
             result.append(goal)
-        return result
+            return result
+        else:
+            # result = self.build_path(goal, parent)
+            result.append(goal)
+            return result
 
     def build_path(
         self,
@@ -93,10 +112,15 @@ class Strategy(ABC):
     ) -> list[tuple[int, int]]:
         result = []
         tmp = pos
+        i = 0
+        print("DICT PARENT = ", parents)
         while parents.get(tmp) is not None:
             tmp = parents.get(tmp)
+            print(f"REBUILD {i} = {tmp}")
+            i += 1
             result.append(tmp)
         result.reverse()
+        print(f"FINAL RESULT (reversed) {result}")
         return result
 
     @staticmethod
