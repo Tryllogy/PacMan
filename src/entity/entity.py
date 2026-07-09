@@ -11,6 +11,25 @@ class Direction(Enum):
     RIGHT: str = "right"
     NONE: str = "none"
 
+    # Maze positions are (line, column), so index 0 moves along y
+    @classmethod
+    def from_maze_delta(
+        cls,
+        start: tuple[int, int],
+        end: tuple[int, int]
+    ) -> "Direction":
+        d_line = end[0] - start[0]
+        d_col = end[1] - start[1]
+        if d_col > 0:
+            return cls.RIGHT
+        if d_col < 0:
+            return cls.LEFT
+        if d_line > 0:
+            return cls.DOWN
+        if d_line < 0:
+            return cls.UP
+        return cls.NONE
+
 
 class Entity(ABC):
     def __init__(
@@ -22,7 +41,6 @@ class Entity(ABC):
         self.y: int = y
         self.spawn_x: int = x
         self.spawn_y: int = y
-        self.sprites: list[pygame.Surface] = []
 
     @abstractmethod
     def draw(

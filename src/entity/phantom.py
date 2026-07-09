@@ -1,10 +1,10 @@
 from ..strategies import (Strategy, RetreatStrategy,
                           ReturnToSpawnStrategy)
-from .entity import Entity
+from .entity import Entity, Direction
+from .sprite import SpriteSet, load_scaled
 from enum import Enum
 from typing import Generator
 from ..utils import Converter
-import os
 import pygame
 from .. import constant
 
@@ -47,9 +47,11 @@ class Phantom(Entity):
         self.original_strategy: Strategy = strategy
         self.retreat_strategy = RetreatStrategy(self.strategy.map_grid)
         self.color: str = color
-        self.sprites_dimensions: list[tuple[int, int]] = []
-        self.sprites: list[pygame.Surface] = self.get_sprites()
-        self.sprite_index: int = 0
+        self.direction: Direction = Direction.LEFT
+        self.sprites: SpriteSet
+        self.dead_sprites: SpriteSet
+        self.sprites, self.dead_sprites = self.get_sprites()
+        self.scared_sprite: pygame.Surface = load_scaled("scared_ghost.png")
         self.prev_pos: tuple[int, int] = maze_pos
         self.maze_pos: tuple[int, int] = maze_pos
         self.next_maze_pos: tuple[int, int] = maze_pos
@@ -101,7 +103,7 @@ class Phantom(Entity):
             x: int,
             y: int
     ) -> None:
-        w, h = self.sprites_dimensions[self.sprite_index]
+        w, h = self.sprites.size(self.direction)
         self.hitbox: pygame.Rect = pygame.Rect(
             x + w // 4,
             y + h // 4,
@@ -132,9 +134,10 @@ class Phantom(Entity):
                 self.next_maze_pos = next(self.movements)
             except StopIteration:
                 return
-        next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
-        next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(
-            self.sprites_dimensions[self.sprite_index], next_pxl_coord)
+            direction = Direction.from_maze_delta(
+                self.maze_pos, self.next_maze_pos)
+            if direction != Direction.NONE:
+                self.direction = direction
         next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
         self.update_hitbox(next_pxl_x, next_pxl_y)
         dx = next_pxl_x - self.x
@@ -149,44 +152,31 @@ class Phantom(Entity):
 
     def get_sprites(
         self
-    ) -> list[pygame.Surface]:
-        sprites: list[pygame.Surface] = []
-        sprite_dir: str = os.path.join("src/sprites")
-        all_sprites_str = os.listdir(sprite_dir)
-        for sprite in all_sprites_str:
-            if self.color in sprite:
-                sprites.append(
-                    pygame.image.load(os.path.join(sprite_dir, sprite)))
-                sprites[-1] = pygame.transform.scale(
-                    sprites[-1],
-                    (constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5,
-                     constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5))
-                self.sprites_dimensions.append(sprites[-1].get_size())
-        return sprites
+    ) -> tuple[SpriteSet, SpriteSet]:
+        colored_sprites = SpriteSet({
+            Direction.UP: [load_scaled(f"{self.color}_ghost_top.png")],
+            Direction.DOWN: [load_scaled(f"{self.color}_ghost_bot.png")],
+            Direction.LEFT: [load_scaled(f"{self.color}_ghost_left.png")],
+            Direction.RIGHT: [load_scaled(f"{self.color}_ghost_right.png")],
+        })
+        dead_sprites = SpriteSet({
+            Direction.UP: [load_scaled("dead_ghost_top.png")],
+            Direction.DOWN: [load_scaled("dead_ghost_bot.png")],
+            Direction.LEFT: [load_scaled("dead_ghost_left.png")],
+            Direction.RIGHT: [load_scaled("dead_ghost_right.png")],
+        })
+        return colored_sprites, dead_sprites
 
     def draw(
         self,
         screen: pygame.Surface
     ) -> None:
-        self.change_sprite()
-        screen.blit(self.sprites[self.sprite_index], (self.x, self.y))
-
-    def change_sprite(
-        self
-    ) -> None:
-        ax, ay = self.maze_pos
-        try:
-            nx, ny = self.maze_pos
-        except ErrorPhant:
-            nx, ny = self.maze_pos
-        if ay < ny:
-            self.sprite_index = 1
-        elif ay > ny:
-            self.sprite_index = 2
-        elif ax < nx:
-            self.sprite_index = 3
-        elif ax > nx:
-            self.sprite_index = 0
+        if self.retreat:
+            screen.blit(self.scared_sprite, (self.x, self.y))
+        elif self.to_spawn:
+            screen.blit(self.dead_sprites.get(self.direction), (self.x, self.y))
+        else:
+            screen.blit(self.sprites.get(self.direction), (self.x, self.y))
 
     def update(
         self,
@@ -210,5 +200,6 @@ class Phantom(Entity):
         self.maze_pos = self.spawn_maze_pos
         self.strategy = self.original_strategy
         self.next_maze_pos = self.maze_pos
+        self.direction = Direction.LEFT
         self.retreat = False
         self.to_spawn = False

@@ -28,3 +28,4 @@ RESPAWN_TIME = 10  # seconds
 
 FPS = 60
 SCORE_DIR = "src/score/"
+SPRITE_DIR = "src/sprites"

@@ -1,6 +1,6 @@
 import pygame
-import os
 from .entity import Direction, Entity
+from .sprite import SpriteSet, load_scaled
 from .phantom import Phantom
 from .wall import Wall
 from .pacgum import Pacgum
@@ -30,51 +30,43 @@ class Player(Entity):
         self.points_per_super_pacgum: int = points_per_super_pacgum
         self.points_per_ghost: int = points_per_ghost
         self.score: Score = score
-        self.sprite_dimensions: list[tuple[int, int]] = []
         self.sprite_index: int = 0
-        self.sprites: list[pygame.Surface] = self.get_sprites()
+        self.sprites: SpriteSet = self.get_sprites()
         self.last_sprite_change_time: int = pygame.time.get_ticks()
-        self.current_sprite: pygame.Surface = self.sprites[self.sprite_index]
         self.direction: Direction = Direction.NONE
         self.next_direction: Direction = self.direction
         self.hitbox: pygame.Rect
         self.invincible: bool = False
 
+    # Sprites face right, every other direction is a rotation of them
+    ROTATIONS: dict[Direction, int] = {
+        Direction.UP: 90,
+        Direction.DOWN: 270,
+        Direction.LEFT: 180,
+        Direction.RIGHT: 0,
+        Direction.NONE: 0
+    }
+
     def draw(
         self,
         screen
     ) -> None:
-        if self.direction == Direction.NONE:
-            screen.blit(self.current_sprite, (self.x, self.y))
-            return
-        self.current_sprite = pygame.transform.rotate(
-            self.sprites[self.sprite_index],
-            {
-                Direction.UP: 90,
-                Direction.DOWN: 270,
-                Direction.LEFT: 180,
-                Direction.RIGHT: 0,
-                Direction.NONE: 0
-            }[self.direction]
+        sprite = pygame.transform.rotate(
+            self.sprites.get(Direction.RIGHT, self.sprite_index),
+            self.ROTATIONS[self.direction]
         )
-        screen.blit(self.current_sprite, (self.x, self.y))
+        screen.blit(sprite, (self.x, self.y))
 
     def get_sprites(
         self
-    ) -> list[pygame.Surface]:
-        sprites: list[pygame.Surface] = []
-        sprite_dir: str = os.path.join("src/sprites")
-        all_sprites_str = os.listdir(sprite_dir)
-        for sprite in all_sprites_str:
-            if "pacman" in sprite:
-                sprites.append(
-                    pygame.image.load(os.path.join(sprite_dir, sprite)))
-                sprites[-1] = pygame.transform.scale(
-                    sprites[-1],
-                    (constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5,
-                     constant.WALL_HEIGHT - constant.WALL_WIDTH * 1.5))
-                self.sprite_dimensions.append(sprites[-1].get_size())
-        return sprites
+    ) -> SpriteSet:
+        return SpriteSet({
+            Direction.RIGHT: [
+                load_scaled("pacman_1.png"),
+                load_scaled("pacman_2.png"),
+                load_scaled("pacman_3.png"),
+            ]
+        })
 
     def check_collision(
         self,
@@ -139,10 +131,7 @@ class Player(Entity):
             }[self.direction]
             self.x += dx
             self.y += dy
-            moving: bool = True
-        else:
-            moving: bool = False
-        self.update_sprite(moving)
+        self.update_sprite()
         if self.check_collision(self.x, self.y, pacgums)[0]:
             self.score.score += self.points_per_pacgum
             pacgums.remove(self.check_collision(self.x, self.y, pacgums)[1])
@@ -175,24 +164,18 @@ class Player(Entity):
 
     def update_sprite(
         self,
-        moving: bool
     ) -> None:
-        if not moving:
-            return
         now: int = pygame.time.get_ticks()
         if now - self.last_sprite_change_time >= \
                 constant.PLAYER_SPRITE_CHANGE_DELAY:
             self.last_sprite_change_time = now
-            self.sprite_index = (self.sprite_index + 1) % len(self.sprites)
+            self.sprite_index = (self.sprite_index + 1) % \
+                self.sprites.frame_count(Direction.RIGHT)
 
     def update_hitbox(
         self,
         x: int,
         y: int
     ) -> None:
-        self.hitbox: pygame.Rect = pygame.Rect(
-            x,
-            y,
-            self.sprite_dimensions[self.sprite_index][0],
-            self.sprite_dimensions[self.sprite_index][1]
-        )
+        w, h = self.sprites.size(Direction.RIGHT, self.sprite_index)
+        self.hitbox: pygame.Rect = pygame.Rect(x, y, w, h)
