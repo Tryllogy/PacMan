@@ -1,5 +1,6 @@
 from .strategy import Strategy
 from collections import deque
+import random
 
 
 class RetreatStrategy(Strategy):
@@ -25,35 +26,39 @@ class RetreatStrategy(Strategy):
             result.append(tmp)
         return result
 
-    # def get_path(
-    #     self,
-    #     start: tuple[int, int]
-    # ) -> list[tuple[int, int]]:
-    #     width = len(self.map_grid)
-    #     heigh = len(self.map_grid[0])
-    #     x, y = goal
-    #     visited = [[False] * heigh for i in range(width)]
-    #     visited[x][y] = True
-    #     q = deque()
-    #     q.append(goal)
-    #     result = []
-    #     parents = {}
-    #     while q:
-    #         curr = q.popleft()
-    #         result.append(curr)
-    #         lst_adj = self.get_adj(curr, self.map_grid)
-    #         for adj in lst_adj:
-    #             x, y = adj
-    #             if not visited[x][y]:
-    #                 parents.update({adj: curr})
-    #                 visited[x][y] = True
-    #                 q.append(adj)
-    #     result = self.build_path(start, parents)
-    #     return result
+    def is_away(cls, start: tuple[int, int], current: tuple[int, int], player_pos: tuple[int, int]) -> bool:
+        par_x, par_y = start
+        curr_x, curr_y = current
+        play_x, play_y = player_pos
+        min_x = min(par_x, play_x)
+        max_x = max(par_x, play_x)
+        min_y = min(par_y, play_y)
+        max_y = max(par_y, play_y)
+        range_x = [min_x + i for i in range(max_x - min_x + 1)]
+        range_y = [min_y + i for i in range(max_y - min_y + 1)]
+        if curr_y not in range_y or curr_x not in range_x:
+            return True
+        return False
+
+    def get_path(
+        self,
+        phantom_pos: tuple[int, int],
+        player_pos: tuple[int, int],
+        prev_phantom_pos: tuple[int, int]
+    ) -> list[tuple[int, int]]:
+        lst_adj = self.get_adj(phantom_pos, self.map_grid)
+        for adj in lst_adj:
+            if self.is_away(phantom_pos, adj, player_pos):
+                return [adj]
+        if len(lst_adj) > 1:
+            lst_adj.pop(lst_adj.index(prev_phantom_pos))
+        return [random.choice(lst_adj)]
 
     # Will go away as far as possible from the player
     def movement(
         self,
-        start: tuple[int, int]
+        phantom_pos: tuple[int, int],
+        player_pos: tuple[int, int],
+        prev_phantom_pos: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
-        return self.get_path(start, 'retreat')
+        return self.get_path(phantom_pos, player_pos, prev_phantom_pos)

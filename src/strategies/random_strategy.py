@@ -10,7 +10,6 @@ class RandomStrategy(Strategy):
             name: str = "Random"
     ) -> None:
         super().__init__(map_grid=map_grid, name=name)
-        self.phantom_pos: tuple[int, int] = phantom_pos
         self.target: tuple[int, int] = phantom_pos
         self.path: list[tuple[int, int]] = []
 
@@ -29,14 +28,12 @@ class RandomStrategy(Strategy):
     # Will take a point in maze a move to
     def movement(
         self,
-        start: tuple[int, int]
+        phantom_pos: tuple[int, int],
+        player_pos: tuple[int, int],
+        phantom_prev_pos: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        self.phantom_pos = start
-        # print("target", self.target, "phantome pos", self.phantom_pos)
-        if self.target != self.phantom_pos:
-            return self.path
-        self.target = self.get_goal()
-        Strategy.set_rand_pos(self.target)
-        # print("self.path", self.path)
-        # print("self.target", self.target)
-        return self.get_path(start, 'rand')
+        self.phantom_pos = phantom_pos
+        if self.target == self.phantom_pos:
+            self.target = self.get_goal()
+        print("target phantom", self.target, self.phantom_pos)
+        return self.get_path(self.phantom_pos, self.target)

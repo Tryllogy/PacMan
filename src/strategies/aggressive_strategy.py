@@ -12,7 +12,8 @@ class AggressiveStrategy(Strategy):
     # Will follow the player everytime
     def movement(
         self,
-        start: tuple[int, int]
+        phantom_pos: tuple[int, int],
+        player_pos: tuple[int, int],
+        _: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        # print("==============", start, goal)
-        return self.get_path(start, 'aggro')
+        return self.get_path(phantom_pos, player_pos)

@@ -49,17 +49,16 @@ class Phantom(Entity):
         self.sprites_dimensions: list[tuple[int, int]] = []
         self.sprites: list[pygame.Surface] = self.get_sprites()
         self.sprite_index: int = 0
+        self.prev_pos: tuple[int, int] = maze_pos
         self.maze_pos: tuple[int, int] = maze_pos
-        self.spawn_maze_pos: tuple[int, int] = maze_pos
         self.next_maze_pos: tuple[int, int] = maze_pos
+        self.spawn_maze_pos: tuple[int, int] = maze_pos
         self.conv: Converter = conv
         self.path: list[tuple[int, int]] = []
         self.retreat: bool = False
         self.update_hitbox(x, y)
         self.timer = constant.RETREAT_TIME
         pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
-        # print(self.conv.get_coord_sprite(self.sprites[self.sprite_index].get_size(), (x, y)))
-        # print((x, y))
 
     def update_target_pos(self, pos: tuple[int, int]) -> None:
         self.target_maze_pos = pos
@@ -78,14 +77,13 @@ class Phantom(Entity):
             yield pos
         return None
 
-    def update_path(self) -> None:
-        tmp = self.strategy.movement(self.maze_pos)
+    def update_path(self, player_pos: tuple[int, int]) -> None:
+        tmp = self.strategy.movement(self.maze_pos, player_pos, self.prev_pos)
+        print("path", tmp)
+        if len(tmp) > 0 and tmp[0] == self.maze_pos:
+            tmp.pop(0)
         self.path = tmp
         self.movements = self.gen_move(self.path)
-        # print("tmp . self.path", tmp, self.path)
-        # if tmp != self.path:
-        #     self.path = tmp
-        #     self.movements = self.gen_move(self.path)
 
     def update_hitbox(
             self,
@@ -117,43 +115,16 @@ class Phantom(Entity):
 
     # Base on strategy it will move differently from other phantoms
     # il faut remetre self.next_maze_pos
-    def move(self):
-        # print("current pos", self.maze_pos)
-        # print("next pos", self.next_maze_pos)
-        # print("x, y:", self.x, self.y)
-        # print("path", self.path)
+    def move(self, player_pos: tuple[int, int]):
         if self.next_maze_pos == self.maze_pos:
-            # print("current pos, next pos", self.maze_pos, self.next_maze_pos)
-            # print("strat", self.strategy.__class__.__name__)
-            # print("path", self.path)
-            self.update_path()
+            self.update_path(player_pos)
             try:
                 self.next_maze_pos = next(self.movements)
             except StopIteration:
                 return
-        # print("current", self.maze_pos)
-        # print("next", self.next_maze_pos)
         next_pxl_coord = self.conv.maze_to_pxl(self.next_maze_pos)
         next_pxl_x, next_pxl_y = self.conv.get_coord_sprite(
             self.sprites_dimensions[self.sprite_index], next_pxl_coord)
-        # print("next x y :", next_pxl_x, next_pxl_y)
-        # if (self.x, self.y) == (next_pxl_x, next_pxl_y):
-        #     self.maze_pos = self.next_maze_pos
-        #     self.update_path()
-        #     try:
-        #         self.next_maze_pos = next(self.movements)
-        #     except StopIteration:
-        #         return
-
-        #     try:
-        #         self.next_maze_pos = self.get_next_pos()
-        #     except ErrorPhant:
-        #         self.update_path()
-        #         self.next_maze_pos = self.get_next_pos()
-        # print("ACTUAL = ", self.maze_pos)
-        # print("NEXT = ", self.next_maze_pos)
-        print(self.strategy.name)
-        print(self.path)
         next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
         self.update_hitbox(next_pxl_x, next_pxl_y)
         dx = next_pxl_x - self.x
@@ -163,10 +134,8 @@ class Phantom(Entity):
         self.x += x
         self.y += y
         if (self.x, self.y) == (next_pxl_x, next_pxl_y):
+            self.prev_pos = self.maze_pos
             self.maze_pos = self.next_maze_pos
-        # self.maze_pos = self.next_maze_pos
-        # if (next_pxl_x, next_pxl_y) == (self.x, self.y):
-        #   self.maze_pos = self.next_maze_pos
 
     def get_sprites(
         self
@@ -213,8 +182,7 @@ class Phantom(Entity):
         self,
         player_pos
     ) -> None:
-        Strategy.set_player_pos(player_pos)
-        self.move()
+        self.move(player_pos)
 
     def reset_strategy(self):
         self.strategy = self.original_strategy
