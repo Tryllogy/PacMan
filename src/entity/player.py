@@ -177,5 +177,10 @@ class Player(Entity):
         x: int,
         y: int
     ) -> None:
-        w, h = self.sprites.size(Direction.RIGHT, self.sprite_index)
-        self.hitbox: pygame.Rect = pygame.Rect(x, y, w, h)
+        w, h = self.sprites.size(self.direction, self.sprite_index)
+        self.hitbox: pygame.Rect = pygame.Rect(
+            x,
+            y,
+            w,
+            h
+        )

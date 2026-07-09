@@ -38,10 +38,13 @@ class Phantom(Entity):
             raise TypeError(f"Not a valid strategy: {strategy}")
         if color not in PhantomColor.ALL_COLORS.value:
             raise ValueError("Phantom is not a color that is supported")
+        self.color: str = color
+        self.conv: Converter = conv
         self.strategy: Strategy = strategy
         self.original_strategy: Strategy = strategy
+        self.spawn_strategy: Strategy = ReturnToSpawnStrategy(
+            self.strategy.map_grid, maze_pos)
         self.retreat_strategy = RetreatStrategy(self.strategy.map_grid)
-        self.color: str = color
         self.direction: Direction = Direction.LEFT
         self.sprites: SpriteSet
         self.dead_sprites: SpriteSet
@@ -51,28 +54,30 @@ class Phantom(Entity):
         self.maze_pos: tuple[int, int] = maze_pos
         self.next_maze_pos: tuple[int, int] = maze_pos
         self.spawn_maze_pos: tuple[int, int] = maze_pos
-        self.conv: Converter = conv
         self.path: list[tuple[int, int]] = []
-        self.retreat: bool = False
-        self.to_spawn: bool = False
-        self.update_hitbox(x, y)
+        pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
         self.retreat_timer = constant.RETREAT_TIME
         self.respawn_timer: int = constant.RESPAWN_TIME
-        self.spawn_strategy: Strategy = ReturnToSpawnStrategy(
-            self.strategy.map_grid, maze_pos)
-        pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
+        self.update_hitbox(x, y)
+
+    # The current strategy is the only source of truth for the phantom state
+    @property
+    def retreat(self) -> bool:
+        return isinstance(self.strategy, RetreatStrategy)
+
+    @property
+    def to_spawn(self) -> bool:
+        return isinstance(self.strategy, ReturnToSpawnStrategy)
 
     def set_retreat_strategy(self) -> None:
-        if not self.retreat:
-            self.strategy = self.retreat_strategy
-            self.retreat = True
+        if self.to_spawn:
+            return
+        self.strategy = self.retreat_strategy
         self.retreat_timer = constant.RETREAT_TIME
 
     def set_spawn_strategy(self) -> None:
         self.strategy = self.spawn_strategy
         self.next_maze_pos = self.maze_pos
-        self.retreat = False
-        self.to_spawn = True
         self.respawn_timer = constant.RESPAWN_TIME
 
     def gen_move(
@@ -97,10 +102,10 @@ class Phantom(Entity):
     ) -> None:
         w, h = self.sprites.size(self.direction)
         self.hitbox: pygame.Rect = pygame.Rect(
-            x + w // 4,
-            y + h // 4,
-            w // 2,
-            h // 2
+            x,
+            y,
+            w,
+            h
         )
 
     def get_pxl_pos_delta(self, delta: float) -> int:
@@ -124,13 +129,8 @@ class Phantom(Entity):
             if direction != Direction.NONE:
                 self.direction = direction
         next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
-        self.update_hitbox(next_pxl_x, next_pxl_y)
-        dx = next_pxl_x - self.x
-        dy = next_pxl_y - self.y
-        x = self.get_pxl_pos_delta(dx)
-        y = self.get_pxl_pos_delta(dy)
-        self.x += x
-        self.y += y
+        self.x += self.get_pxl_pos_delta(next_pxl_x - self.x)
+        self.y += self.get_pxl_pos_delta(next_pxl_y - self.y)
         if (self.x, self.y) == (next_pxl_x, next_pxl_y):
             self.prev_pos = self.maze_pos
             self.maze_pos = self.next_maze_pos
@@ -138,18 +138,29 @@ class Phantom(Entity):
     def load_sprites(
         self
     ) -> tuple[SpriteSet, SpriteSet]:
-        colored_sprites = SpriteSet({
-            Direction.UP: [load_scaled(f"{self.color}_ghost_top.png")],
-            Direction.DOWN: [load_scaled(f"{self.color}_ghost_bot.png")],
-            Direction.LEFT: [load_scaled(f"{self.color}_ghost_left.png")],
-            Direction.RIGHT: [load_scaled(f"{self.color}_ghost_right.png")],
-        })
-        dead_sprites = SpriteSet({
-            Direction.UP: [load_scaled("dead_ghost_top.png")],
-            Direction.DOWN: [load_scaled("dead_ghost_bot.png")],
-            Direction.LEFT: [load_scaled("dead_ghost_left.png")],
-            Direction.RIGHT: [load_scaled("dead_ghost_right.png")],
-        })
+        try:
+            colored_sprites = SpriteSet({
+                Direction.UP: [load_scaled(f"{self.color}_ghost_top.png")],
+                Direction.DOWN: [load_scaled(f"{self.color}_ghost_bot.png")],
+                Direction.LEFT: [load_scaled(f"{self.color}_ghost_left.png")],
+                Direction.RIGHT: [load_scaled(f"{self.color}_ghost_right.png")],
+            })
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"Sprites for color {self.color} not "
+                f"found in the sprite directory"
+                "Must be named as <color>_ghost_<direction>.png")
+        try:
+            dead_sprites = SpriteSet({
+                Direction.UP: [load_scaled("dead_ghost_top.png")],
+                Direction.DOWN: [load_scaled("dead_ghost_bot.png")],
+                Direction.LEFT: [load_scaled("dead_ghost_left.png")],
+                Direction.RIGHT: [load_scaled("dead_ghost_right.png")],
+            })
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                "Dead ghost sprites not found in the sprite directory"
+                "Must be named as dead_ghost_<direction>.png")
         return colored_sprites, dead_sprites
 
     def draw(
@@ -168,15 +179,13 @@ class Phantom(Entity):
         self,
         player_pos
     ) -> None:
+        self.update_hitbox(self.x, self.y)
         if self.to_spawn and self.maze_pos == self.spawn_maze_pos:
-            self.to_spawn = False
             self.strategy = self.original_strategy
         self.move(player_pos)
 
     def reset_strategy(self):
         self.strategy = self.original_strategy
-        self.retreat = False
-        self.to_spawn = False
 
     def reset_position(
         self
@@ -187,5 +196,3 @@ class Phantom(Entity):
         self.strategy = self.original_strategy
         self.next_maze_pos = self.maze_pos
         self.direction = Direction.LEFT
-        self.retreat = False
-        self.to_spawn = False
