@@ -32,7 +32,7 @@ class Strategy(ABC):
         goal = player_pos
         while open_heap:
             cost, current = heapq.heappop(open_heap)
-            if (goal != start and current == goal):  # or stop_retreat is True:
+            if (goal != start and current == goal):
                 break
             lst_adj = self.get_adj(current, self.map_grid)
             for adj in lst_adj:

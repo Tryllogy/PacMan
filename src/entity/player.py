@@ -7,7 +7,6 @@ from .pacgum import Pacgum
 from .superpacgum import SuperPacgum
 from .score import Score
 from .. import constant
-from ..strategies import RetreatStrategy
 
 
 class Player(Entity):
@@ -97,8 +96,9 @@ class Player(Entity):
     ) -> tuple[bool, Phantom | None]:
         if self.invincible:
             return False, None
-        self.update_hitbox(x, y)
         for phantom in phantoms:
+            if phantom.to_spawn:
+                continue
             if self.hitbox.colliderect(phantom.hitbox):
                 return True, phantom
         return False, None
@@ -152,21 +152,26 @@ class Player(Entity):
                                                       super_pacgums)[1])
             for phantom in phantoms:
                 phantom.set_retreat_strategy()
-        if self.check_collision_with_phantoms(self.x, self.y, phantoms)[0]:
-            self.lives -= 1
-            self.reset_positions(phantoms)
+        collision_with_phantom, phantom = self.check_collision_with_phantoms(
+            self.x, self.y, phantoms)
+        if collision_with_phantom:
+            if phantom.retreat:
+                phantom.set_spawn_strategy()
+                self.score.score += self.points_per_ghost
+            elif not phantom.retreat and not phantom.to_spawn:
+                self.lives -= 1
+                self.reset_positions()
+                for phantom in phantoms:
+                    phantom.reset_position()
 
     def reset_positions(
         self,
-        phantoms: list[Phantom]
     ) -> None:
         self.x = self.spawn_x
         self.y = self.spawn_y
         self.direction = Direction.NONE
         self.next_direction = Direction.NONE
         self.sprite_index = 0
-        for phantom in phantoms:
-            phantom.reset_position()
 
     def update_sprite(
         self,

@@ -9,20 +9,20 @@ class ErrorParsing(Exception):
 
 
 class Level(BaseModel):
-    name: str = Field(min_length=1, max_length=20)  # 1 / 20
-    width: int = Field(ge=10, default=10)  # 10 / 10
-    height: int = Field(ge=10, default=10)  # 10 / 10
+    name: str = Field(min_length=1, max_length=20)
+    width: int = Field(ge=10, default=10)
+    height: int = Field(ge=10, default=10)
 
 
 class Data(BaseModel):
-    highscore_filename: str = 'score.json'  # "Score.json"
+    highscore_filename: str = 'score.json'
     levels: list[Level] = Field(min_items=10)
-    lives: int = Field(ge=3, default=3)  # 3 / 3
-    points_per_pacgum: int = Field(ge=1, default=10)  # 1 / 10
-    points_per_super_pacgum: int = Field(ge=1, default=50)  # 1 / 50
-    points_per_ghost: int = Field(ge=1, default=200)  # 1 / 200
-    seed: int = 42  # 42
-    level_max_time: int = Field(ge=60, default=90)  # 60 / 90
+    lives: int = Field(ge=3, default=3)
+    points_per_pacgum: int = Field(ge=1, default=10)
+    points_per_super_pacgum: int = Field(ge=1, default=50)
+    points_per_ghost: int = Field(ge=1, default=200)
+    seed: int = 42
+    level_max_time: int = Field(ge=60, default=90)
 
     @model_validator(mode='after')
     def filename_validator(self) -> 'Data':

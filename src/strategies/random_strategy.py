@@ -35,5 +35,4 @@ class RandomStrategy(Strategy):
         self.phantom_pos = phantom_pos
         if self.target == self.phantom_pos:
             self.target = self.get_goal()
-        print("target phantom", self.target, self.phantom_pos)
         return self.get_path(self.phantom_pos, self.target)

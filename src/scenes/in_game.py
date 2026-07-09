@@ -45,7 +45,7 @@ class InGameScene(Scene):
         self.pacgums: list[Pacgum] = []
         self.super_pacgums: list[SuperPacgum] = []
         self.score: Score = score
-        self.ini_converter()
+        self.init_converter()
         self.make_wall()
         self.make_pacgum()
         self.make_phantom()
@@ -68,7 +68,7 @@ class InGameScene(Scene):
             self.new_level()
         return self.current_scene
 
-    def ini_converter(self) -> None:
+    def init_converter(self) -> None:
         maze_h = len(self.maze_gen.maze)
         maze_w = len(self.maze_gen.maze[0])
         self.converter = Converter(
@@ -83,7 +83,6 @@ class InGameScene(Scene):
         if self.level_index >= len(self.config.levels):
             self.current_scene = GameState.WIN.value
         else:
-            print("NEW LEVEL")
             self.timer = self.level_max_time
             self.phantoms.clear()
             self.walls.clear()
@@ -91,7 +90,7 @@ class InGameScene(Scene):
             self.super_pacgums.clear()
             self.generate_maze()
             self.offset = self.get_offset()
-            self.ini_converter()
+            self.init_converter()
             self.make_wall()
             self.make_pacgum()
             self.make_phantom()
@@ -124,6 +123,11 @@ class InGameScene(Scene):
             if event.type == pygame.USEREVENT + 2:
                 for phantom in self.phantoms:
                     if phantom.retreat:
+                        if phantom.timer > 0:
+                            phantom.timer -= 1
+                            if phantom.timer <= 0:
+                                phantom.reset_strategy()
+                    if phantom.to_spawn:
                         if phantom.timer > 0:
                             phantom.timer -= 1
                             if phantom.timer <= 0:
@@ -261,22 +265,22 @@ class InGameScene(Scene):
         my -= constant.WALL_HEIGHT
         x = len(self.maze_gen.maze) - 1
         y = len(self.maze_gen.maze[0]) - 1
-        # self.phantoms.append(Phantom(
-        #     0 + self.offset[0] + offset_phantom,
-        #     0 + self.offset[1] + offset_phantom,
-        #     AggressiveStrategy(self.maze_gen.maze),
-        #     "purple",
-        #     (0, 0),
-        #     self.converter
-        # ))
-        # self.phantoms.append(Phantom(
-        #     mx + self.offset[0] + offset_phantom,
-        #     0 + self.offset[1] + offset_phantom,
-        #     AggressiveStrategy(self.maze_gen.maze),
-        #     "green",
-        #     (0, y),
-        #     self.converter
-        # ))
+        self.phantoms.append(Phantom(
+            0 + self.offset[0] + offset_phantom,
+            0 + self.offset[1] + offset_phantom,
+            AggressiveStrategy(self.maze_gen.maze),
+            "purple",
+            (0, 0),
+            self.converter
+        ))
+        self.phantoms.append(Phantom(
+            mx + self.offset[0] + offset_phantom,
+            0 + self.offset[1] + offset_phantom,
+            AggressiveStrategy(self.maze_gen.maze),
+            "green",
+            (0, y),
+            self.converter
+        ))
         self.phantoms.append(Phantom(
             0 + self.offset[0] + offset_phantom,
             my + self.offset[1] + offset_phantom,
@@ -285,14 +289,14 @@ class InGameScene(Scene):
             (x, 0),
             self.converter
         ))
-        # self.phantoms.append(Phantom(
-        #     my + self.offset[0] + offset_phantom,
-        #     mx + self.offset[1] + offset_phantom,
-        #     ZoneStrategy(self.maze_gen.maze, (0, y)),
-        #     "red",
-        #     (x, y),
-        #     self.converter
-        # ))
+        self.phantoms.append(Phantom(
+            my + self.offset[0] + offset_phantom,
+            mx + self.offset[1] + offset_phantom,
+            ZoneStrategy(self.maze_gen.maze, (0, y)),
+            "red",
+            (x, y),
+            self.converter
+        ))
 
     def make_wall(
         self

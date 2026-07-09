@@ -1,4 +1,5 @@
-from ..strategies import Strategy, RetreatStrategy
+from ..strategies import (Strategy, RetreatStrategy,
+                          ReturnToSpawnStrategy)
 from .entity import Entity
 from enum import Enum
 from typing import Generator
@@ -56,9 +57,13 @@ class Phantom(Entity):
         self.conv: Converter = conv
         self.path: list[tuple[int, int]] = []
         self.retreat: bool = False
+        self.to_spawn: bool = False
         self.update_hitbox(x, y)
         self.timer = constant.RETREAT_TIME
+        self.spawn_strategy: Strategy = ReturnToSpawnStrategy(
+            self.strategy.map_grid, maze_pos)
         pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
+        self.respawn_timer = constant.RESPAWN_TIME
 
     def update_target_pos(self, pos: tuple[int, int]) -> None:
         self.target_maze_pos = pos
@@ -68,6 +73,13 @@ class Phantom(Entity):
             self.strategy = self.retreat_strategy
             self.retreat = True
         self.timer = constant.RETREAT_TIME
+
+    def set_spawn_strategy(self) -> None:
+        self.strategy = self.spawn_strategy
+        self.next_maze_pos = self.maze_pos
+        self.retreat = False
+        self.to_spawn = True
+        self.timer = constant.RESPAWN_TIME
 
     def gen_move(
         self,
@@ -79,7 +91,6 @@ class Phantom(Entity):
 
     def update_path(self, player_pos: tuple[int, int]) -> None:
         tmp = self.strategy.movement(self.maze_pos, player_pos, self.prev_pos)
-        print("path", tmp)
         if len(tmp) > 0 and tmp[0] == self.maze_pos:
             tmp.pop(0)
         self.path = tmp
@@ -89,7 +100,7 @@ class Phantom(Entity):
             self,
             x: int,
             y: int
-            ) -> None:
+    ) -> None:
         w, h = self.sprites_dimensions[self.sprite_index]
         self.hitbox: pygame.Rect = pygame.Rect(
             x + w // 4,
@@ -114,7 +125,6 @@ class Phantom(Entity):
             raise ErrorPhant("No more movements available")
 
     # Base on strategy it will move differently from other phantoms
-    # il faut remetre self.next_maze_pos
     def move(self, player_pos: tuple[int, int]):
         if self.next_maze_pos == self.maze_pos:
             self.update_path(player_pos)
@@ -182,12 +192,15 @@ class Phantom(Entity):
         self,
         player_pos
     ) -> None:
+        if self.to_spawn and self.maze_pos == self.spawn_maze_pos:
+            self.to_spawn = False
+            self.strategy = self.original_strategy
         self.move(player_pos)
 
     def reset_strategy(self):
         self.strategy = self.original_strategy
         self.retreat = False
-        self.timer = constant.RETREAT_TIME
+        self.to_spawn = False
 
     def reset_position(
         self
@@ -196,5 +209,6 @@ class Phantom(Entity):
         self.y = self.spawn_y
         self.maze_pos = self.spawn_maze_pos
         self.strategy = self.original_strategy
-        # self.next_maze_pos = self.maze_pos
+        self.next_maze_pos = self.maze_pos
         self.retreat = False
+        self.to_spawn = False
