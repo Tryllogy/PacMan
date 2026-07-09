@@ -10,42 +10,40 @@ class ZoneStrategy(Strategy):
     ) -> None:
         super().__init__(map_grid=map_grid, name=name)
         self.zone: list[tuple[int, int]] = []
-        self.possible_x: list[int] = [
+        self.possible_rows: list[int] = [
             0,
             len(self.map_grid) // 2,
             len(self.map_grid) - 1,
         ]
-        self.possible_y: list[int] = [
+        self.possible_cols: list[int] = [
             0,
             len(self.map_grid[0]) // 2,
             len(self.map_grid[0]) - 1,
         ]
         self.make_zone()
 
-    # Will take a zone to move in then circle in it until every spot has been
-    # used 1 time
     def movement(
         self,
-        phantom_pos: tuple[int, int],
-        player_pos: tuple[int, int],
-        phantom_prev_pos: tuple[int, int]
+        phantom_cell: tuple[int, int],
+        player_cell: tuple[int, int],
+        prev_phantom_cell: tuple[int, int]
     ):
         if len(self.zone) == 0:
             self.make_zone()
-        goal = random.choice(self.zone)
-        self.zone.remove(goal)
-        return self.get_path(phantom_pos, goal)
+        goal_cell = random.choice(self.zone)
+        self.zone.remove(goal_cell)
+        return self.get_path(phantom_cell, goal_cell)
 
     def make_zone(
         self,
     ) -> bool:
-        x = random.sample(self.possible_x, 2)
-        y = random.sample(self.possible_y, 2)
-        start_x, end_x = min(x), max(x)
-        start_y, end_y = min(y), max(y)
+        rows = random.sample(self.possible_rows, 2)
+        cols = random.sample(self.possible_cols, 2)
+        start_row, end_row = min(rows), max(rows)
+        start_col, end_col = min(cols), max(cols)
         self.zone = []
-        for i in range(start_x, end_x):
-            for j in range(start_y, end_y):
-                if self.map_grid[i][j] == 15:
+        for row in range(start_row, end_row):
+            for col in range(start_col, end_col):
+                if self.map_grid[row][col] == 15:
                     continue
-                self.zone.append((i, j))
+                self.zone.append((row, col))

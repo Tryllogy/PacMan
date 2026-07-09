@@ -26,14 +26,14 @@ class PhantomColor(Enum):
 class Phantom(Entity):
     def __init__(
             self,
-            x: int,
-            y: int,
+            pixel_x: int,
+            pixel_y: int,
             strategy: Strategy,
             color: str,
-            maze_pos: tuple[int, int],
+            cell: tuple[int, int],
             conv: Converter
     ):
-        super().__init__(x, y)
+        super().__init__(pixel_x, pixel_y)
         if not isinstance(strategy, Strategy):
             raise TypeError(f"Not a valid strategy: {strategy}")
         if color not in PhantomColor.ALL_COLORS.value:
@@ -43,24 +43,26 @@ class Phantom(Entity):
         self.strategy: Strategy = strategy
         self.original_strategy: Strategy = strategy
         self.spawn_strategy: Strategy = ReturnToSpawnStrategy(
-            self.strategy.map_grid, maze_pos)
+            self.strategy.map_grid, cell)
         self.retreat_strategy = RetreatStrategy(self.strategy.map_grid)
         self.direction: Direction = Direction.LEFT
         self.sprites: SpriteSet
         self.dead_sprites: SpriteSet
-        self.sprites, self.dead_sprites = self.load_sprites()
-        self.scared_sprite: pygame.Surface = load_scaled("scared_ghost.png")
-        self.prev_pos: tuple[int, int] = maze_pos
-        self.maze_pos: tuple[int, int] = maze_pos
-        self.next_maze_pos: tuple[int, int] = maze_pos
-        self.spawn_maze_pos: tuple[int, int] = maze_pos
+        self.scared_sprite: list[pygame.Surface]
+        self.sprites, \
+            self.dead_sprites, \
+            self.scared_sprite = self.load_sprites()
+        self.scared_sprite_index: int = 0
+        self.prev_cell: tuple[int, int] = cell
+        self.cell: tuple[int, int] = cell
+        self.next_cell: tuple[int, int] = cell
+        self.spawn_cell: tuple[int, int] = cell
         self.path: list[tuple[int, int]] = []
         pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
         self.retreat_timer = constant.RETREAT_TIME
         self.respawn_timer: int = constant.RESPAWN_TIME
-        self.update_hitbox(x, y)
+        self.update_hitbox(pixel_x, pixel_y)
 
-    # The current strategy is the only source of truth for the phantom state
     @property
     def retreat(self) -> bool:
         return isinstance(self.strategy, RetreatStrategy)
@@ -74,41 +76,41 @@ class Phantom(Entity):
             return
         self.strategy = self.retreat_strategy
         self.retreat_timer = constant.RETREAT_TIME
+        self.last_sprite_change_time = pygame.time.get_ticks()
 
     def set_spawn_strategy(self) -> None:
         self.strategy = self.spawn_strategy
-        self.next_maze_pos = self.maze_pos
         self.respawn_timer = constant.RESPAWN_TIME
 
     def gen_move(
         self,
         path: list[tuple[int, int]]
     ) -> Generator[tuple[int, int], None, None]:
-        for pos in path:
-            yield pos
+        for cell in path:
+            yield cell
         return None
 
-    def update_path(self, player_pos: tuple[int, int]) -> None:
-        tmp = self.strategy.movement(self.maze_pos, player_pos, self.prev_pos)
-        if len(tmp) > 0 and tmp[0] == self.maze_pos:
+    def update_path(self, player_cell: tuple[int, int]) -> None:
+        tmp = self.strategy.movement(self.cell, player_cell, self.prev_cell)
+        if len(tmp) > 0 and tmp[0] == self.cell:
             tmp.pop(0)
         self.path = tmp
         self.movements = self.gen_move(self.path)
 
     def update_hitbox(
             self,
-            x: int,
-            y: int
+            pixel_x: int,
+            pixel_y: int
     ) -> None:
         w, h = self.sprites.size(self.direction)
         self.hitbox: pygame.Rect = pygame.Rect(
-            x,
-            y,
+            pixel_x,
+            pixel_y,
             w,
             h
         )
 
-    def get_pxl_pos_delta(self, delta: float) -> int:
+    def get_pixel_delta(self, delta: float) -> int:
         if delta > 0:
             return 1
         elif delta < 0:
@@ -116,28 +118,26 @@ class Phantom(Entity):
         else:
             return 0
 
-    # Base on strategy it will move differently from other phantoms
-    def move(self, player_pos: tuple[int, int]):
-        if self.next_maze_pos == self.maze_pos:
-            self.update_path(player_pos)
+    def move(self, player_cell: tuple[int, int]):
+        if self.next_cell == self.cell:
+            self.update_path(player_cell)
             try:
-                self.next_maze_pos = next(self.movements)
+                self.next_cell = next(self.movements)
             except StopIteration:
                 return
-            direction = Direction.from_maze_delta(
-                self.maze_pos, self.next_maze_pos)
+            direction = Direction.from_cell_delta(self.cell, self.next_cell)
             if direction != Direction.NONE:
                 self.direction = direction
-        next_pxl_x, next_pxl_y = self.conv.maze_to_pxl(self.next_maze_pos)
-        self.x += self.get_pxl_pos_delta(next_pxl_x - self.x)
-        self.y += self.get_pxl_pos_delta(next_pxl_y - self.y)
-        if (self.x, self.y) == (next_pxl_x, next_pxl_y):
-            self.prev_pos = self.maze_pos
-            self.maze_pos = self.next_maze_pos
+        next_pixel_x, next_pixel_y = self.conv.cell_to_pixel(self.next_cell)
+        self.pixel_x += self.get_pixel_delta(next_pixel_x - self.pixel_x)
+        self.pixel_y += self.get_pixel_delta(next_pixel_y - self.pixel_y)
+        if (self.pixel_x, self.pixel_y) == (next_pixel_x, next_pixel_y):
+            self.prev_cell = self.cell
+            self.cell = self.next_cell
 
     def load_sprites(
         self
-    ) -> tuple[SpriteSet, SpriteSet]:
+    ) -> tuple[SpriteSet, SpriteSet, list[pygame.Surface]]:
         try:
             colored_sprites = SpriteSet({
                 Direction.UP: [load_scaled(f"{self.color}_ghost_top.png")],
@@ -161,28 +161,46 @@ class Phantom(Entity):
             raise FileNotFoundError(
                 "Dead ghost sprites not found in the sprite directory"
                 "Must be named as dead_ghost_<direction>.png")
-        return colored_sprites, dead_sprites
+        try:
+            scared_sprite = [load_scaled("scared_ghost_1.png"),
+                             load_scaled("scared_ghost_2.png")]
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                "Scared ghost sprite not found in the sprite directory"
+                "Must be named as scared_ghost_<number>.png")
+        return colored_sprites, dead_sprites, scared_sprite
 
     def draw(
         self,
         screen: pygame.Surface
     ) -> None:
         if self.retreat:
-            screen.blit(self.scared_sprite, (self.x, self.y))
+            now = pygame.time.get_ticks()
+            if (self.retreat_timer < 3 and
+                    now - self.last_sprite_change_time >=
+                    constant.GHOST_SPRITE_CHANGE_DELAY):
+                self.last_sprite_change_time = now
+                self.scared_sprite_index = 1
+            else:
+                self.scared_sprite_index = 0
+            screen.blit(
+                self.scared_sprite[self.scared_sprite_index],
+                (self.pixel_x, self.pixel_y))
         elif self.to_spawn:
             screen.blit(self.dead_sprites.get(
-                self.direction), (self.x, self.y))
+                self.direction), (self.pixel_x, self.pixel_y))
         else:
-            screen.blit(self.sprites.get(self.direction), (self.x, self.y))
+            screen.blit(self.sprites.get(
+                self.direction), (self.pixel_x, self.pixel_y))
 
     def update(
         self,
-        player_pos
+        player_cell
     ) -> None:
-        self.update_hitbox(self.x, self.y)
-        if self.to_spawn and self.maze_pos == self.spawn_maze_pos:
+        self.update_hitbox(self.pixel_x, self.pixel_y)
+        if self.to_spawn and self.cell == self.spawn_cell:
             self.strategy = self.original_strategy
-        self.move(player_pos)
+        self.move(player_cell)
 
     def reset_strategy(self):
         self.strategy = self.original_strategy
@@ -190,9 +208,9 @@ class Phantom(Entity):
     def reset_position(
         self
     ) -> None:
-        self.x = self.spawn_x
-        self.y = self.spawn_y
-        self.maze_pos = self.spawn_maze_pos
+        self.pixel_x = self.spawn_pixel_x
+        self.pixel_y = self.spawn_pixel_y
+        self.cell = self.spawn_cell
         self.strategy = self.original_strategy
-        self.next_maze_pos = self.maze_pos
+        self.next_cell = self.cell
         self.direction = Direction.LEFT

@@ -11,22 +11,21 @@ class Direction(Enum):
     RIGHT: str = "right"
     NONE: str = "none"
 
-    # Maze positions are (line, column), so index 0 moves along y
     @classmethod
-    def from_maze_delta(
+    def from_cell_delta(
         cls,
-        start: tuple[int, int],
-        end: tuple[int, int]
+        start_cell: tuple[int, int],
+        end_cell: tuple[int, int]
     ) -> "Direction":
-        d_line = end[0] - start[0]
-        d_col = end[1] - start[1]
+        d_row = end_cell[0] - start_cell[0]
+        d_col = end_cell[1] - start_cell[1]
         if d_col > 0:
             return cls.RIGHT
         if d_col < 0:
             return cls.LEFT
-        if d_line > 0:
+        if d_row > 0:
             return cls.DOWN
-        if d_line < 0:
+        if d_row < 0:
             return cls.UP
         return cls.NONE
 
@@ -34,13 +33,13 @@ class Direction(Enum):
 class Entity(ABC):
     def __init__(
         self,
-        x: int,
-        y: int
+        pixel_x: int,
+        pixel_y: int
     ) -> None:
-        self.x: int = x
-        self.y: int = y
-        self.spawn_x: int = x
-        self.spawn_y: int = y
+        self.pixel_x: int = pixel_x
+        self.pixel_y: int = pixel_y
+        self.spawn_pixel_x: int = pixel_x
+        self.spawn_pixel_y: int = pixel_y
 
     @abstractmethod
     def draw(
@@ -53,6 +52,6 @@ class Entity(ABC):
             self,
     ) -> bool:
         return (
-            (self.x - self.origin_x) % constant.WALL_HEIGHT == 0 and
-            (self.y - self.origin_y) % constant.WALL_HEIGHT == 0
+            (self.pixel_x - self.origin_pixel_x) % constant.WALL_HEIGHT == 0
+            and (self.pixel_y - self.origin_pixel_y) % constant.WALL_HEIGHT == 0
         )

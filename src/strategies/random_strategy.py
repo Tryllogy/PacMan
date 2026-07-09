@@ -6,33 +6,32 @@ class RandomStrategy(Strategy):
     def __init__(
             self,
             map_grid: list[list[int]],
-            phantom_pos: tuple[int, int],
+            phantom_cell: tuple[int, int],
             name: str = "Random"
     ) -> None:
         super().__init__(map_grid=map_grid, name=name)
-        self.target: tuple[int, int] = phantom_pos
+        self.target_cell: tuple[int, int] = phantom_cell
         self.path: list[tuple[int, int]] = []
 
     def get_goal(self):
-        available_points: list[tuple[int, int]] = []
-        for y, row in enumerate(self.map_grid):
-            for x, cell in enumerate(row):
-                if cell == 15:
+        available_cells: list[tuple[int, int]] = []
+        for row, line in enumerate(self.map_grid):
+            for col, value in enumerate(line):
+                if value == 15:
                     continue
-                if (x, y) == self.phantom_pos:
+                if (row, col) == self.phantom_cell:
                     continue
-                available_points.append((x, y))
-        goal = random.choice(available_points)
-        return goal
+                available_cells.append((row, col))
+        goal_cell = random.choice(available_cells)
+        return goal_cell
 
-    # Will take a point in maze a move to
     def movement(
         self,
-        phantom_pos: tuple[int, int],
-        player_pos: tuple[int, int],
-        phantom_prev_pos: tuple[int, int]
+        phantom_cell: tuple[int, int],
+        player_cell: tuple[int, int],
+        prev_phantom_cell: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        self.phantom_pos = phantom_pos
-        if self.target == self.phantom_pos:
-            self.target = self.get_goal()
-        return self.get_path(self.phantom_pos, self.target)
+        self.phantom_cell = phantom_cell
+        if self.target_cell == self.phantom_cell:
+            self.target_cell = self.get_goal()
+        return self.get_path(self.phantom_cell, self.target_cell)

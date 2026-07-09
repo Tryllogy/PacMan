@@ -14,16 +14,15 @@ class Strategy(ABC):
 
     def get_path(
         self,
-        phantom_pos: tuple[int, int],
-        player_pos: str
+        phantom_cell: tuple[int, int],
+        goal_cell: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        start = phantom_pos
-        goal = player_pos
+        start = phantom_cell
+        goal = goal_cell
         open_heap: list[tuple[float, tuple[int, int]]] = []
         heapq.heappush(open_heap, (0.0, start))
         g_cost: dict[tuple[int, int], float] = {start: 0.0}
         parent: dict[tuple[int, int], tuple[int, int]] = {}
-        goal = player_pos
         while open_heap:
             cost, current = heapq.heappop(open_heap)
             if (goal != start and current == goal):
@@ -41,13 +40,13 @@ class Strategy(ABC):
 
     def build_path(
         self,
-        pos: tuple[int, int],
+        cell: tuple[int, int],
         parents: dict[
             tuple[int, int],
             tuple[int, int]]
     ) -> list[tuple[int, int]]:
         result = []
-        tmp = pos
+        tmp = cell
         while parents.get(tmp) is not None:
             result.append(tmp)
             tmp = parents.get(tmp)
@@ -56,28 +55,28 @@ class Strategy(ABC):
 
     def get_adj(
         self,
-        pos: tuple[int, int],
+        cell: tuple[int, int],
         map_maze: list[list[int]]
     ) -> list[tuple[int, int]]:
         result = []
-        line, col = pos
-        value = format(map_maze[line][col], '04b')
+        row, col = cell
+        value = format(map_maze[row][col], '04b')
         if value[0] == '0':
-            result.append((line, col - 1))
+            result.append((row, col - 1))
         if value[1] == '0':
-            result.append((line + 1, col))
+            result.append((row + 1, col))
         if value[2] == '0':
-            result.append((line, col + 1))
+            result.append((row, col + 1))
         if value[3] == '0':
-            result.append((line - 1, col))
+            result.append((row - 1, col))
         return result
 
     def get_cost(
         self,
-        case: tuple[int, int]
+        cell: tuple[int, int]
     ) -> float:
-        x, y = case
-        value = format(self.map_grid[x][y], '04b')
+        row, col = cell
+        value = format(self.map_grid[row][col], '04b')
         n_wall = sum([int(c) for c in value])
         if n_wall == 2:
             return 1.2
@@ -87,19 +86,18 @@ class Strategy(ABC):
             return 1.0
         return math.inf
 
-    # Will go to his spawnpoint if killed by player
     def to_spawn(
         self,
-        start: tuple[int, int],
-        spawnpoint: tuple[int, int]
+        start_cell: tuple[int, int],
+        spawn_cell: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        return self.get_path(start, spawnpoint)
+        return self.get_path(start_cell, spawn_cell)
 
     @abstractmethod
     def movement(
         self,
-        phantom_pos: tuple[int, int],
-        player_pos: tuple[int, int],
-        prev_phantom_pos: tuple[int, int] | None = None
+        phantom_cell: tuple[int, int],
+        player_cell: tuple[int, int],
+        prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
         pass

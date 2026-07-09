@@ -9,11 +9,10 @@ class AggressiveStrategy(Strategy):
     ) -> None:
         super().__init__(map_grid=map_grid, name=name)
 
-    # Will follow the player everytime
     def movement(
         self,
-        phantom_pos: tuple[int, int],
-        player_pos: tuple[int, int],
+        phantom_cell: tuple[int, int],
+        player_cell: tuple[int, int],
         _: tuple[int, int]
     ) -> list[tuple[int, int]]:
-        return self.get_path(phantom_pos, player_pos)
+        return self.get_path(phantom_cell, player_cell)
