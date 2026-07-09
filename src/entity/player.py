@@ -133,11 +133,13 @@ class Player(Entity):
         self.update_sprite()
         if self.check_collision(self.pixel_x, self.pixel_y, pacgums)[0]:
             self.score.score += self.points_per_pacgum
-            pacgums.remove(self.check_collision(self.pixel_x, self.pixel_y, pacgums)[1])
+            pacgums.remove(self.check_collision(
+                self.pixel_x, self.pixel_y, pacgums)[1])
         if self.check_collision(self.pixel_x, self.pixel_y, super_pacgums)[0]:
             self.score.score += self.points_per_super_pacgum
-            super_pacgums.remove(self.check_collision(self.pixel_x, self.pixel_y,
-                                                      super_pacgums)[1])
+            super_pacgums.remove(self.check_collision(
+                self.pixel_x, self.pixel_y,
+                super_pacgums)[1])
             for phantom in phantoms:
                 phantom.set_retreat_strategy()
         collision_with_phantom, phantom = self.check_collision_with_phantoms(

@@ -53,5 +53,6 @@ class Entity(ABC):
     ) -> bool:
         return (
             (self.pixel_x - self.origin_pixel_x) % constant.WALL_HEIGHT == 0
-            and (self.pixel_y - self.origin_pixel_y) % constant.WALL_HEIGHT == 0
+            and (self.pixel_y - self.origin_pixel_y) %
+            constant.WALL_HEIGHT == 0
         )

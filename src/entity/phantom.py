@@ -143,7 +143,8 @@ class Phantom(Entity):
                 Direction.UP: [load_scaled(f"{self.color}_ghost_top.png")],
                 Direction.DOWN: [load_scaled(f"{self.color}_ghost_bot.png")],
                 Direction.LEFT: [load_scaled(f"{self.color}_ghost_left.png")],
-                Direction.RIGHT: [load_scaled(f"{self.color}_ghost_right.png")],
+                Direction.RIGHT:
+                [load_scaled(f"{self.color}_ghost_right.png")],
             })
         except FileNotFoundError:
             raise FileNotFoundError(
@@ -180,9 +181,8 @@ class Phantom(Entity):
                     now - self.last_sprite_change_time >=
                     constant.GHOST_SPRITE_CHANGE_DELAY):
                 self.last_sprite_change_time = now
-                self.scared_sprite_index = 1
-            else:
-                self.scared_sprite_index = 0
+                self.scared_sprite_index = (
+                    self.scared_sprite_index + 1) % len(self.scared_sprite)
             screen.blit(
                 self.scared_sprite[self.scared_sprite_index],
                 (self.pixel_x, self.pixel_y))
