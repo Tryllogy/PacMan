@@ -47,14 +47,3 @@ class Scene(ABC):
         self,
     ) -> None:
         self.screen.fill((0, 0, 0))
-
-    def hover_text(
-            self,
-            txt_dimension: tuple[int, int],
-            mouse_pos: tuple[int, int],
-            pos_text: tuple[int, int]
-    ) -> bool:
-        x, y = pos_text
-        tx, ty = txt_dimension
-        mx, my = mouse_pos
-        return x <= mx <= x + tx and y <= my <= y + ty

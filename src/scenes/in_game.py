@@ -2,7 +2,7 @@ from mazegenerator import MazeGenerator
 from ..utils.converter import Converter
 from ..parsing import Data
 from .scene import Scene, GameState
-from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy, RetreatStrategy)
+from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy)
 from ..entity import (Phantom, Player, Direction,
                       Wall, Pacgum, SuperPacgum, Score)
 from .. import constant
@@ -123,14 +123,14 @@ class InGameScene(Scene):
             if event.type == pygame.USEREVENT + 2:
                 for phantom in self.phantoms:
                     if phantom.retreat:
-                        if phantom.timer > 0:
-                            phantom.timer -= 1
-                            if phantom.timer <= 0:
+                        if phantom.retreat_timer > 0:
+                            phantom.retreat_timer -= 1
+                            if phantom.retreat_timer <= 0:
                                 phantom.reset_strategy()
                     if phantom.to_spawn:
-                        if phantom.timer > 0:
-                            phantom.timer -= 1
-                            if phantom.timer <= 0:
+                        if phantom.respawn_timer > 0:
+                            phantom.respawn_timer -= 1
+                            if phantom.respawn_timer <= 0:
                                 phantom.reset_strategy()
         return self.current_scene
 

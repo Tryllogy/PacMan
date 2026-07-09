@@ -9,11 +9,6 @@ import pygame
 from .. import constant
 
 
-class ErrorPhant(Exception):
-    def __init__(self, *args: str):
-        super().__init__(*args)
-
-
 class PhantomColor(Enum):
     PURPLE: str = "purple"
     BLUE: str = "blue"
@@ -50,7 +45,7 @@ class Phantom(Entity):
         self.direction: Direction = Direction.LEFT
         self.sprites: SpriteSet
         self.dead_sprites: SpriteSet
-        self.sprites, self.dead_sprites = self.get_sprites()
+        self.sprites, self.dead_sprites = self.load_sprites()
         self.scared_sprite: pygame.Surface = load_scaled("scared_ghost.png")
         self.prev_pos: tuple[int, int] = maze_pos
         self.maze_pos: tuple[int, int] = maze_pos
@@ -61,27 +56,24 @@ class Phantom(Entity):
         self.retreat: bool = False
         self.to_spawn: bool = False
         self.update_hitbox(x, y)
-        self.timer = constant.RETREAT_TIME
+        self.retreat_timer = constant.RETREAT_TIME
+        self.respawn_timer: int = constant.RESPAWN_TIME
         self.spawn_strategy: Strategy = ReturnToSpawnStrategy(
             self.strategy.map_grid, maze_pos)
         pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
-        self.respawn_timer = constant.RESPAWN_TIME
-
-    def update_target_pos(self, pos: tuple[int, int]) -> None:
-        self.target_maze_pos = pos
 
     def set_retreat_strategy(self) -> None:
         if not self.retreat:
             self.strategy = self.retreat_strategy
             self.retreat = True
-        self.timer = constant.RETREAT_TIME
+        self.retreat_timer = constant.RETREAT_TIME
 
     def set_spawn_strategy(self) -> None:
         self.strategy = self.spawn_strategy
         self.next_maze_pos = self.maze_pos
         self.retreat = False
         self.to_spawn = True
-        self.timer = constant.RESPAWN_TIME
+        self.respawn_timer = constant.RESPAWN_TIME
 
     def gen_move(
         self,
@@ -119,13 +111,6 @@ class Phantom(Entity):
         else:
             return 0
 
-    def get_next_pos(self) -> tuple[int, int]:
-        try:
-            next_pos: tuple[int, int] = next(self.movements)
-            return next_pos
-        except StopIteration:
-            raise ErrorPhant("No more movements available")
-
     # Base on strategy it will move differently from other phantoms
     def move(self, player_pos: tuple[int, int]):
         if self.next_maze_pos == self.maze_pos:
@@ -150,7 +135,7 @@ class Phantom(Entity):
             self.prev_pos = self.maze_pos
             self.maze_pos = self.next_maze_pos
 
-    def get_sprites(
+    def load_sprites(
         self
     ) -> tuple[SpriteSet, SpriteSet]:
         colored_sprites = SpriteSet({
@@ -174,7 +159,8 @@ class Phantom(Entity):
         if self.retreat:
             screen.blit(self.scared_sprite, (self.x, self.y))
         elif self.to_spawn:
-            screen.blit(self.dead_sprites.get(self.direction), (self.x, self.y))
+            screen.blit(self.dead_sprites.get(
+                self.direction), (self.x, self.y))
         else:
             screen.blit(self.sprites.get(self.direction), (self.x, self.y))
 

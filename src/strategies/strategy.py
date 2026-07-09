@@ -4,9 +4,6 @@ import heapq
 
 
 class Strategy(ABC):
-    player_pos: tuple[int, int]
-    rand_pos: tuple[int, int]
-
     def __init__(
             self,
             map_grid: list[list[int]],
@@ -14,9 +11,6 @@ class Strategy(ABC):
     ):
         self.name: str = name
         self.map_grid: list[list[int]] = map_grid
-        self.duration: int = 5000
-
-
 
     def get_path(
         self,

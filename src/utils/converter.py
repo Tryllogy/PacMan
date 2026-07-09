@@ -30,13 +30,3 @@ class Converter():
         player_maze_col = (pxl_x - self.offset_h) // self.ppc_h
         player_maze_line = (pxl_y - self.offset_w) // self.ppc_w
         return (int(player_maze_line), int(player_maze_col))
-
-    def get_coord_sprite(self, size_img: tuple[int, int], pxl_pos: tuple[float, float]) -> tuple[float, float]:
-        mid_case_x = pxl_pos[0] + self.ppc_h // 2
-        mid_case_y = pxl_pos[1] + self.ppc_w // 2
-        offset_img_x = size_img[0] // 2
-        offset_img_y = size_img[1] // 2
-        x = constant.WALL_WIDTH // 2 + mid_case_x - offset_img_x - constant.WALL_WIDTH * 1.3
-        y = constant.WALL_WIDTH // 2 + mid_case_y - offset_img_y - constant.WALL_WIDTH * 1.3
-        result = (x, y)
-        return result

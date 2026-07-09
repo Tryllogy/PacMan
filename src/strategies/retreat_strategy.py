@@ -1,5 +1,4 @@
 from .strategy import Strategy
-from collections import deque
 import random
 
 

@@ -21,7 +21,6 @@ class Button:
         self.font: pygame.font.Font = font
         self.base_color: color = constant.BUTTON_COLOR_BASE
         self.hover_color: color = constant.BUTTON_COLOR_HOVER
-        self.txt_color: color = constant.TEXT_COLOR_BASE
         self.hovered: bool = False
         self.clicked: bool = False
 

@@ -39,11 +39,6 @@ class Parser():
         self.path = path
         self.data = self.clean_json()
 
-    def check_path(self) -> None:
-        if not self.path.is_file():
-            raise ErrorParsing(
-                f"path doesnt exist or is not a file: {self.path}")
-
     def clean_json(self) -> list:
         result = ""
         i = 0
