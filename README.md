@@ -26,10 +26,10 @@ Requirements: **Python 3.10+** and [`uv`](https://docs.astral.sh/uv/).
 make install            # runs: uv sync
 
 # Run the game (defaults to ./src/config/config.json)
-make run                # runs: uv run python -m src ./src/config/config.json
+make run                # runs: uv run python3 pac-man.py ./src/config/config.json
 
 # Run with a custom config
-uv run python -m src path/to/config.json
+uv run python3 pac-man.py path/to/config.json
 
 # Run under the Python debugger (pdb)
 make debug
@@ -123,14 +123,14 @@ adapts to its interface, not the other way around.
   randomly.
 - If the generator fails, the error is handled cleanly.
 
-Integration lives in `src/__main__.py` (first maze) and
+Integration lives in `pac-man.py` (first maze) and
 `src/scenes/in_game.py` (`generate_maze`, subsequent levels).
 
 ## Implementation
 
 - **Language / stack**: Python 3.10+, `pygame` for rendering and input,
   `pydantic` for typed/validated configuration, `json5` for comment-aware JSON.
-- **Entry point**: `python -m src <config.json>` (`src/__main__.py`) — validates
+- **Entry point**: `python3 pac-man.py <config.json>` (`pac-man.py`) — validates
   the CLI argument, loads the config, initializes pygame, and runs the main loop.
 - **Scene state machine**: the main loop dispatches to the current scene
   (`GameState` enum) each frame; scenes return the next state.
@@ -148,8 +148,8 @@ Integration lives in `src/__main__.py` (first maze) and
 High-level module overview:
 
 ```
+pac-man.py             # entry point: CLI parsing, pygame init, scene state machine / game loop
 src/
-├── __main__.py        # CLI parsing, pygame init, scene state machine / game loop
 ├── constant.py        # Screen size, colors, timings, paths, gameplay constants
 ├── parsing/           # parser.py — comment-aware JSON + pydantic Data/Level models
 ├── entity/            # Game objects
@@ -174,7 +174,7 @@ src/
 └── sprites/           # PNG assets
 ```
 
-Relationships: `__main__` owns the scenes and the shared `Score`; scenes read
+Relationships: `pac-man.py` owns the scenes and the shared `Score`; scenes read
 the parsed `Data` config and draw entities; `in_game` composes `Player`,
 `Phantom`s, `Pacgum`s and `Wall`s from the generated maze; each `Phantom`
 delegates its per-frame move to a `Strategy`; end/highscore scenes go through the

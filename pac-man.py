@@ -41,6 +41,7 @@ def main() -> None:
     def new_game_scene() -> InGameScene:
         maze_gen: MazeGenerator = MazeGenerator(
             (config.levels[0].width, config.levels[0].height),
+            perfect=False,
             seed=config.seed)
         maze_gen.generate(config.seed)
         score.score = 0

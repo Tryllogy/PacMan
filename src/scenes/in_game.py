@@ -162,7 +162,8 @@ class InGameScene(Scene):
     ) -> None:
         self.maze_gen = MazeGenerator(
             (self.config.levels[self.level_index].width,
-                self.config.levels[self.level_index].height))
+                self.config.levels[self.level_index].height),
+            perfect=False)
         self.maze_gen.generate()
 
     def draw_timer(
