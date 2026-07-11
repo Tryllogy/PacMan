@@ -13,6 +13,7 @@ dependencies = [
     "pygame",
     "json5",
     "mazegenerator",
+    "pyinstaller",
 ]
 
 [project.optional-dependencies]

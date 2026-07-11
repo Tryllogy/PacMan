@@ -1,3 +1,4 @@
+import os
 import pygame
 from .scene import Scene, GameState
 from .button import Button
@@ -31,7 +32,7 @@ class HighscoreScene(Scene):
         self
     ) -> None:
         self.highscores: list[dict] = load_highscores(
-            constant.SCORE_DIR + self.filename)
+            os.path.join(constant.SCORE_DIR, self.filename))
 
     def back_main(
         self

@@ -1,3 +1,26 @@
+import os
+import sys
+
+
+def _project_root() -> str:
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _bundle_dir() -> str:
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return str(sys._MEIPASS)
+    return _project_root()
+
+
+def _data_dir() -> str:
+    if getattr(sys, "frozen", False):
+        return os.path.dirname(os.path.abspath(sys.executable))
+    return _project_root()
+
+
+_BUNDLE_DIR = _bundle_dir()
+_DATA_DIR = _data_dir()
+
 TEXT_COLOR_BASE = (171, 173, 21)
 
 BUTTON_COLOR_BASE = (14, 24, 138)
@@ -26,8 +49,8 @@ RETREAT_TIME = 8
 RESPAWN_TIME = 10
 
 FPS = 60
-SCORE_DIR = "src/score/"
-SPRITE_DIR = "src/sprites"
+SCORE_DIR = os.path.join(_DATA_DIR, "score")
+SPRITE_DIR = os.path.join(_BUNDLE_DIR, "src", "sprites")
 
 MAX_HIGHSCORES = 10
 MAX_NAME_LENGTH = 10

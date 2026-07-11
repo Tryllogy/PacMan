@@ -1,15 +1,15 @@
 ARGS := ./src/config/config.json
 
-.PHONY: install run debug clean lint lint-strict
+.PHONY: install run debug clean lint lint-strict build
 
 install:
 	uv sync
 
 run:
-	uv run python -m src $(ARGS)
+	uv run python3 pac-man.py $(ARGS)
 
 debug:
-	uv run python -m pdb -m src $(ARGS)
+	uv run python3 -m pdb pac-man.py $(ARGS)
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
@@ -28,3 +28,9 @@ lint:
 lint-strict:
 	uv run flake8 . --exclude=.venv
 	uv run mypy . --strict
+
+build:
+	uv run pyinstaller --onedir --name pacman \
+		--add-data "src/sprites:src/sprites" \
+		--add-data "src/config:src/config" \
+		pac-man.py

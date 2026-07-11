@@ -44,7 +44,12 @@ class Data(BaseModel):
 class Parser():
     def __init__(self, path: Path) -> None:
         self.path = path
-        self.data = self.clean_json()
+        try:
+            self.data = self.clean_json()
+        except Exception:
+            print(f"Config: failed to parse {self.path}; "
+                  "using default configuration")
+            self.data = Data()
 
     def clean_json(self) -> Any:
         result = ""
