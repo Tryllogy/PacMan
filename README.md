@@ -199,6 +199,13 @@ AI assistance was used to:
 
 ## Project Management
 
-See the dedicated project-management directory (to be added) for the project
-timeline, progress tracking, risk analysis, team organization, and the acceptance
-test plan.
+The project was driven with a lightweight feature-branch + Kanban workflow, with
+work split by subsystem across two developers and integrated into `main` through
+frequent merges. See the dedicated [`project-management/`](project-management/)
+directory for the full evidence:
+
+- [Timeline & progress tracking](project-management/timeline.md)
+- [Team organization](project-management/team-organization.md)
+- [Risk analysis](project-management/risk-analysis.md)
+- [Acceptance test plan](project-management/acceptance-test-plan.md)
+- [Retrospective (blocking points & conflicts)](project-management/retrospective.md)
