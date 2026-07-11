@@ -8,6 +8,7 @@ from ..entity import (Phantom, Player, Direction,
 from .. import constant
 from enum import Enum
 import pygame
+import math
 
 
 class Walls(Enum):
@@ -208,8 +209,8 @@ class InGameScene(Scene):
     def find_open_middle_maze(
         self
     ) -> tuple[int, int]:
-        middle_row: int = round(len(self.maze_gen.maze) / 2) - 1
-        middle_col: int = round(len(self.maze_gen.maze[0]) / 2) - 1
+        middle_row: int = math.ceil(len(self.maze_gen.maze) / 2) - 1
+        middle_col: int = math.ceil(len(self.maze_gen.maze[0]) / 2) - 1
         while self.maze_gen.maze[middle_row][middle_col] == 15:
             middle_row += 1
             if middle_row >= len(self.maze_gen.maze):
@@ -243,11 +244,12 @@ class InGameScene(Scene):
     def make_pacgum(
         self
     ) -> None:
+        middle_row, middle_col = self.find_open_middle_maze()
         offset_pacgum: int = int(
             constant.WALL_HEIGHT / 2 + constant.WALL_WIDTH / 2)
         for row, line in enumerate(self.maze_gen.maze):
             for col, value in enumerate(line):
-                if value == 15:
+                if value == 15 or (row == middle_row and col == middle_col):
                     continue
 
                 pixel_x: int = col * constant.WALL_HEIGHT
