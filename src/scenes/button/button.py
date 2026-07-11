@@ -21,18 +21,13 @@ class Button:
         self.font: pygame.font.Font = font
         self.base_color: color = constant.BUTTON_COLOR_BASE
         self.hover_color: color = constant.BUTTON_COLOR_HOVER
-        self.txt_color: color = constant.TEXT_COLOR_BASE
         self.hovered: bool = False
-        self.clicked: bool = False
 
     def draw(
         self,
         screen
     ) -> None:
-        if self.clicked and pygame.time.get_ticks() - self.click_timer < 100:
-            color = self.click_color
-        else:
-            color = self.hover_color if self.hovered else self.base_color
+        color = self.hover_color if self.hovered else self.base_color
 
         pygame.draw.rect(screen, color, self.rect, border_radius=8)
 
@@ -47,6 +42,4 @@ class Button:
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)
         elif event.type == pygame.MOUSEBUTTONDOWN and self.hovered:
-            self.clicked = True
-            self.click_timer = pygame.time.get_ticks()
             self.callback()

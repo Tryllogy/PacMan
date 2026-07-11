@@ -5,7 +5,10 @@ from .sprite import SpriteSet, load_scaled
 from .wall import Wall
 from .pacgum import Pacgum
 from .superpacgum import SuperPacgum
-from .score import Score
+from .score import (
+    Score, load_highscores, save_highscore,
+    sanitize_name_char,
+)
 
 __all__ = [
     "Phantom",
@@ -17,5 +20,8 @@ __all__ = [
     "Wall",
     "Pacgum",
     "SuperPacgum",
-    "Score"
+    "Score",
+    "load_highscores",
+    "save_highscore",
+    "sanitize_name_char",
 ]

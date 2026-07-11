@@ -10,7 +10,6 @@ import sys
 from .entity import Score
 from .parsing.parser import Parser, Data
 from pathlib import Path
-from pydantic import ValidationError
 
 
 def main() -> None:
@@ -20,15 +19,17 @@ def main() -> None:
     elif len(sys.argv) > 2:
         print("Too many args")
         sys.exit(1)
+    if not sys.argv[1].endswith(".json"):
+        print("Config file must be a .json file")
+        sys.exit(1)
     try:
         parser = Parser(Path(sys.argv[1]))
         config: Data = parser.get_data()
-    except ValidationError as e:
-        for error in e.errors():
-            print(f'Value: {error["loc"][0]} -> {error["msg"]}')
+    except FileNotFoundError:
+        print(f"Config file not found: {sys.argv[1]}")
         sys.exit(1)
     except Exception as e:
-        print(e)
+        print(f"Invalid config file: {e}")
         sys.exit(1)
 
     pygame.init()
@@ -95,4 +96,9 @@ def reset_all_scenes(
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        pygame.quit()
+        sys.exit(1)

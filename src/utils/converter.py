@@ -4,39 +4,31 @@ from .. import constant
 class Converter():
     def __init__(
             self,
-            maze_size: tuple[int, int],
-            maze_size_pxl: tuple[int, int],
+            maze_size_cells: tuple[int, int],
+            maze_size_pixels: tuple[int, int],
             screen_size: tuple[int, int]
             ) -> None:
-        self.maze_h = maze_size[0]
-        self.maze_w = maze_size[1]
-        self.maze_h_pxl = maze_size_pxl[0]
-        self.maze_w_pxl = maze_size_pxl[1]
-        self.screen_h = screen_size[0]
-        self.screen_w = screen_size[1]
-        self.ppc_h = self.maze_h_pxl / self.maze_h
-        self.ppc_w = self.maze_w_pxl / self.maze_w
-        self.offset_h = (self.screen_h - self.maze_h_pxl) / 2
-        self.offset_w = (self.screen_w - self.maze_w_pxl) / 2
+        self.maze_rows = maze_size_cells[0]
+        self.maze_cols = maze_size_cells[1]
+        self.maze_height_px = maze_size_pixels[0]
+        self.maze_width_px = maze_size_pixels[1]
+        self.screen_width = screen_size[0]
+        self.screen_height = screen_size[1]
+        self.cell_height_px = self.maze_height_px / self.maze_rows
+        self.cell_width_px = self.maze_width_px / self.maze_cols
+        self.offset_x = (self.screen_width - self.maze_width_px) / 2
+        self.offset_y = (self.screen_height - self.maze_height_px) / 2
 
-    def maze_to_pxl(self, case: tuple[int, int]) -> tuple[int, int]:
-        pxl_y = case[0] * self.ppc_w + self.offset_w + constant.WALL_WIDTH * 1.3
-        pxl_x = case[1] * self.ppc_h + self.offset_h + constant.WALL_WIDTH * 1.3
-        return (pxl_x, pxl_y)
+    def cell_to_pixel(self, cell: tuple[int, int]) -> tuple[int, int]:
+        row, col = cell
+        pixel_x = col * self.cell_width_px + self.offset_x \
+            + constant.WALL_WIDTH * 1.3
+        pixel_y = row * self.cell_height_px + self.offset_y \
+            + constant.WALL_WIDTH * 1.3
+        return (pixel_x, pixel_y)
 
-    def pxl_to_maze(self, pxl: tuple[int, int]) -> tuple[int, int]:
-        pxl_x = pxl[0]
-        pxl_y = pxl[1]
-        player_maze_col = (pxl_x - self.offset_h) // self.ppc_h
-        player_maze_line = (pxl_y - self.offset_w) // self.ppc_w
-        return (int(player_maze_line), int(player_maze_col))
-
-    def get_coord_sprite(self, size_img: tuple[int, int], pxl_pos: tuple[float, float]) -> tuple[float, float]:
-        mid_case_x = pxl_pos[0] + self.ppc_h // 2
-        mid_case_y = pxl_pos[1] + self.ppc_w // 2
-        offset_img_x = size_img[0] // 2
-        offset_img_y = size_img[1] // 2
-        x = constant.WALL_WIDTH // 2 + mid_case_x - offset_img_x - constant.WALL_WIDTH * 1.3
-        y = constant.WALL_WIDTH // 2 + mid_case_y - offset_img_y - constant.WALL_WIDTH * 1.3
-        result = (x, y)
-        return result
+    def pixel_to_cell(self, pixel: tuple[int, int]) -> tuple[int, int]:
+        pixel_x, pixel_y = pixel
+        col = (pixel_x - self.offset_x) // self.cell_width_px
+        row = (pixel_y - self.offset_y) // self.cell_height_px
+        return (int(row), int(col))

@@ -2,7 +2,7 @@ from mazegenerator import MazeGenerator
 from ..utils.converter import Converter
 from ..parsing import Data
 from .scene import Scene, GameState
-from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy, RetreatStrategy)
+from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy)
 from ..entity import (Phantom, Player, Direction,
                       Wall, Pacgum, SuperPacgum, Score)
 from .. import constant
@@ -40,7 +40,7 @@ class InGameScene(Scene):
         self.level_index: int = 0
         self.phantoms: list[Phantom] = []
         self.player: Player | None = None
-        self.offset: tuple[int, int] = self.get_offset()
+        self.maze_origin: tuple[int, int] = self.get_offset()
         self.walls: list[Wall] = []
         self.pacgums: list[Pacgum] = []
         self.super_pacgums: list[SuperPacgum] = []
@@ -55,9 +55,9 @@ class InGameScene(Scene):
         self
     ) -> str:
         for phantom in self.phantoms:
-            player_pos = self.converter.pxl_to_maze(
-                (self.player.x, self.player.y))
-            phantom.update(player_pos)
+            player_cell = self.converter.pixel_to_cell(
+                (self.player.pixel_x, self.player.pixel_y))
+            phantom.update(player_cell)
 
         self.player.update(self.walls, self.pacgums, self.super_pacgums,
                            self.phantoms)
@@ -69,10 +69,10 @@ class InGameScene(Scene):
         return self.current_scene
 
     def init_converter(self) -> None:
-        maze_h = len(self.maze_gen.maze)
-        maze_w = len(self.maze_gen.maze[0])
+        maze_rows = len(self.maze_gen.maze)
+        maze_cols = len(self.maze_gen.maze[0])
         self.converter = Converter(
-            (maze_h, maze_w),
+            (maze_rows, maze_cols),
             self.maze_size_px,
             self.screen.get_size())
 
@@ -89,7 +89,7 @@ class InGameScene(Scene):
             self.pacgums.clear()
             self.super_pacgums.clear()
             self.generate_maze()
-            self.offset = self.get_offset()
+            self.maze_origin = self.get_offset()
             self.init_converter()
             self.make_wall()
             self.make_pacgum()
@@ -112,25 +112,29 @@ class InGameScene(Scene):
                 self.new_level()
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.current_scene = GameState.PAUSE.value
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+            if event.type == pygame.KEYDOWN and event.key in (
+                    pygame.K_UP, pygame.K_w):
                 self.player.next_direction = Direction.UP
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+            if event.type == pygame.KEYDOWN and event.key in (
+                    pygame.K_DOWN, pygame.K_s):
                 self.player.next_direction = Direction.DOWN
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_LEFT:
+            if event.type == pygame.KEYDOWN and event.key in (
+                    pygame.K_LEFT, pygame.K_a):
                 self.player.next_direction = Direction.LEFT
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RIGHT:
+            if event.type == pygame.KEYDOWN and event.key in (
+                    pygame.K_RIGHT, pygame.K_d):
                 self.player.next_direction = Direction.RIGHT
             if event.type == pygame.USEREVENT + 2:
                 for phantom in self.phantoms:
                     if phantom.retreat:
-                        if phantom.timer > 0:
-                            phantom.timer -= 1
-                            if phantom.timer <= 0:
+                        if phantom.retreat_timer > 0:
+                            phantom.retreat_timer -= 1
+                            if phantom.retreat_timer <= 0:
                                 phantom.reset_strategy()
                     if phantom.to_spawn:
-                        if phantom.timer > 0:
-                            phantom.timer -= 1
-                            if phantom.timer <= 0:
+                        if phantom.respawn_timer > 0:
+                            phantom.respawn_timer -= 1
+                            if phantom.respawn_timer <= 0:
                                 phantom.reset_strategy()
         return self.current_scene
 
@@ -192,43 +196,43 @@ class InGameScene(Scene):
     def get_offset(
         self
     ) -> None:
-        self.maze_size_px: tuple[int, int] = (
-            len(self.maze_gen.maze) * constant.WALL_HEIGHT,
-            len(self.maze_gen.maze[0]) * constant.WALL_HEIGHT)
-        offset: tuple[int, int] = (
-            self.middle_screen[0] - self.maze_size_px[0] / 2,
-            self.middle_screen[1] - self.maze_size_px[1] / 2
+        maze_height_px = len(self.maze_gen.maze) * constant.WALL_HEIGHT
+        maze_width_px = len(self.maze_gen.maze[0]) * constant.WALL_HEIGHT
+        self.maze_size_px: tuple[int, int] = (maze_height_px, maze_width_px)
+        maze_origin: tuple[int, int] = (
+            self.middle_screen[0] - maze_width_px / 2,
+            self.middle_screen[1] - maze_height_px / 2
         )
-        return offset
+        return maze_origin
 
     def find_open_middle_maze(
         self
     ) -> tuple[int, int]:
-        middle_maze_x: int = round(len(self.maze_gen.maze) / 2) - 1
-        middle_maze_y: int = round(len(self.maze_gen.maze[0]) / 2) - 1
-        while self.maze_gen.maze[middle_maze_x][middle_maze_y] == 15:
-            middle_maze_x += 1
-            if middle_maze_x >= len(self.maze_gen.maze):
-                middle_maze_x = 0
-                middle_maze_y += 1
-                if middle_maze_y >= len(self.maze_gen.maze[0]):
+        middle_row: int = round(len(self.maze_gen.maze) / 2) - 1
+        middle_col: int = round(len(self.maze_gen.maze[0]) / 2) - 1
+        while self.maze_gen.maze[middle_row][middle_col] == 15:
+            middle_row += 1
+            if middle_row >= len(self.maze_gen.maze):
+                middle_row = 0
+                middle_col += 1
+                if middle_col >= len(self.maze_gen.maze[0]):
                     raise ValueError("No open space in the maze")
-        return (middle_maze_x, middle_maze_y)
+        return (middle_row, middle_col)
 
     def make_player(
         self,
         lives: int,
     ) -> None:
-        middle_maze_x, middle_maze_y = self.find_open_middle_maze()
+        middle_row, middle_col = self.find_open_middle_maze()
         offset_player: int = constant.WALL_WIDTH * 1.3
 
-        pox_x: int = middle_maze_x * constant.WALL_HEIGHT
-        pox_y: int = middle_maze_y * constant.WALL_HEIGHT
+        pixel_x: int = middle_col * constant.WALL_HEIGHT
+        pixel_y: int = middle_row * constant.WALL_HEIGHT
         self.player = Player(
-            self.offset[0] + offset_player + pox_x,
-            self.offset[1] + offset_player + pox_y,
-            self.offset[0] + offset_player,
-            self.offset[1] + offset_player,
+            self.maze_origin[0] + offset_player + pixel_x,
+            self.maze_origin[1] + offset_player + pixel_y,
+            self.maze_origin[0] + offset_player,
+            self.maze_origin[1] + offset_player,
             self.score,
             lives,
             self.config.points_per_pacgum,
@@ -240,145 +244,146 @@ class InGameScene(Scene):
         self
     ) -> None:
         offset_pacgum: int = constant.WALL_HEIGHT / 2 + constant.WALL_WIDTH / 2
-        for y, line in enumerate(self.maze_gen.maze):
-            for x, value in enumerate(line):
+        for row, line in enumerate(self.maze_gen.maze):
+            for col, value in enumerate(line):
                 if value == 15:
                     continue
 
-                pos_x: int = x * constant.WALL_HEIGHT
-                pos_y: int = y * constant.WALL_HEIGHT
-                if self.is_corner(x, y):
+                pixel_x: int = col * constant.WALL_HEIGHT
+                pixel_y: int = row * constant.WALL_HEIGHT
+                if self.is_corner(row, col):
                     self.super_pacgums.append(SuperPacgum(
-                        pos_x + self.offset[0] + offset_pacgum,
-                        pos_y + self.offset[1] + offset_pacgum
+                        pixel_x + self.maze_origin[0] + offset_pacgum,
+                        pixel_y + self.maze_origin[1] + offset_pacgum
                     ))
                 else:
                     self.pacgums.append(Pacgum(
-                        pos_x + self.offset[0] + offset_pacgum,
-                        pos_y + self.offset[1] + offset_pacgum
+                        pixel_x + self.maze_origin[0] + offset_pacgum,
+                        pixel_y + self.maze_origin[1] + offset_pacgum
                     ))
 
     def make_phantom(self):
         offset_phantom: int = constant.WALL_WIDTH * 1.3
-        mx, my = self.maze_size_px
-        mx -= constant.WALL_HEIGHT
-        my -= constant.WALL_HEIGHT
-        x = len(self.maze_gen.maze) - 1
-        y = len(self.maze_gen.maze[0]) - 1
+        maze_height_px, maze_width_px = self.maze_size_px
+        maze_height_px -= constant.WALL_HEIGHT
+        maze_width_px -= constant.WALL_HEIGHT
+        last_row = len(self.maze_gen.maze) - 1
+        last_col = len(self.maze_gen.maze[0]) - 1
         self.phantoms.append(Phantom(
-            0 + self.offset[0] + offset_phantom,
-            0 + self.offset[1] + offset_phantom,
+            0 + self.maze_origin[0] + offset_phantom,
+            0 + self.maze_origin[1] + offset_phantom,
             AggressiveStrategy(self.maze_gen.maze),
             "purple",
             (0, 0),
             self.converter
         ))
         self.phantoms.append(Phantom(
-            mx + self.offset[0] + offset_phantom,
-            0 + self.offset[1] + offset_phantom,
+            maze_width_px + self.maze_origin[0] + offset_phantom,
+            0 + self.maze_origin[1] + offset_phantom,
             AggressiveStrategy(self.maze_gen.maze),
             "green",
-            (0, y),
+            (0, last_col),
             self.converter
         ))
         self.phantoms.append(Phantom(
-            0 + self.offset[0] + offset_phantom,
-            my + self.offset[1] + offset_phantom,
-            RandomStrategy(self.maze_gen.maze, (x, 0)),
+            0 + self.maze_origin[0] + offset_phantom,
+            maze_height_px + self.maze_origin[1] + offset_phantom,
+            RandomStrategy(self.maze_gen.maze, (last_row, 0)),
             "blue",
-            (x, 0),
+            (last_row, 0),
             self.converter
         ))
         self.phantoms.append(Phantom(
-            my + self.offset[0] + offset_phantom,
-            mx + self.offset[1] + offset_phantom,
-            ZoneStrategy(self.maze_gen.maze, (0, y)),
+            maze_width_px + self.maze_origin[0] + offset_phantom,
+            maze_height_px + self.maze_origin[1] + offset_phantom,
+            ZoneStrategy(self.maze_gen.maze),
             "red",
-            (x, y),
+            (last_row, last_col),
             self.converter
         ))
 
     def make_wall(
         self
     ) -> None:
-        for y, line in enumerate(self.maze_gen.maze):
-            for x, value in enumerate(line):
-                pos: tuple[int, int] = (x, y)
+        for row, line in enumerate(self.maze_gen.maze):
+            for col, value in enumerate(line):
+                cell: tuple[int, int] = (row, col)
                 if value >> 3 & 1:
-                    self.make_wall_west(pos)
+                    self.make_wall_west(cell)
                 if value >> 2 & 1:
-                    self.make_wall_south(pos)
+                    self.make_wall_south(cell)
                 if value >> 1 & 1:
-                    self.make_wall_east(pos)
+                    self.make_wall_east(cell)
                 if value & 1:
-                    self.make_wall_north(pos)
+                    self.make_wall_north(cell)
 
     def make_wall_north(
         self,
-        pos: tuple[int, int],
+        cell: tuple[int, int],
     ) -> None:
-        pos_x: int = pos[0] * constant.WALL_HEIGHT
-        pos_y: int = pos[1] * constant.WALL_HEIGHT
+        pixel_x: int = cell[1] * constant.WALL_HEIGHT
+        pixel_y: int = cell[0] * constant.WALL_HEIGHT
         self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
+            self.maze_origin[0] + pixel_x,
+            self.maze_origin[1] + pixel_y,
             constant.WALL_HEIGHT + constant.WALL_WIDTH,
             constant.WALL_WIDTH,
         ))
 
     def make_wall_south(
         self,
-        pos: tuple[int, int]
+        cell: tuple[int, int]
     ) -> None:
         offset: int = constant.WALL_HEIGHT
-        pos_x: int = pos[0] * constant.WALL_HEIGHT
-        pos_y: int = pos[1] * constant.WALL_HEIGHT + offset
+        pixel_x: int = cell[1] * constant.WALL_HEIGHT
+        pixel_y: int = cell[0] * constant.WALL_HEIGHT + offset
         self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
+            self.maze_origin[0] + pixel_x,
+            self.maze_origin[1] + pixel_y,
             constant.WALL_HEIGHT + constant.WALL_WIDTH,
             constant.WALL_WIDTH,
         ))
 
     def make_wall_east(
         self,
-        pos: tuple[int, int]
+        cell: tuple[int, int]
     ) -> None:
         offset: int = constant.WALL_HEIGHT
-        pos_x: int = pos[0] * constant.WALL_HEIGHT + offset
-        pos_y: int = pos[1] * constant.WALL_HEIGHT
+        pixel_x: int = cell[1] * constant.WALL_HEIGHT + offset
+        pixel_y: int = cell[0] * constant.WALL_HEIGHT
         self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
+            self.maze_origin[0] + pixel_x,
+            self.maze_origin[1] + pixel_y,
             constant.WALL_WIDTH,
             constant.WALL_HEIGHT + constant.WALL_WIDTH,
         ))
 
     def make_wall_west(
         self,
-        pos: tuple[int, int]
+        cell: tuple[int, int]
     ) -> None:
-        pos_x: int = pos[0] * constant.WALL_HEIGHT
-        pos_y: int = pos[1] * constant.WALL_HEIGHT
+        pixel_x: int = cell[1] * constant.WALL_HEIGHT
+        pixel_y: int = cell[0] * constant.WALL_HEIGHT
         self.walls.append(Wall(
-            self.offset[0] + pos_x,
-            self.offset[1] + pos_y,
+            self.maze_origin[0] + pixel_x,
+            self.maze_origin[1] + pixel_y,
             constant.WALL_WIDTH,
             constant.WALL_HEIGHT + constant.WALL_WIDTH,
         ))
 
     def is_corner(
         self,
-        x: int,
-        y: int
+        row: int,
+        col: int
     ) -> bool:
-        if y == 0 and x == 0:
+        last_row = len(self.maze_gen.maze) - 1
+        last_col = len(self.maze_gen.maze[0]) - 1
+        if row == 0 and col == 0:
             return True
-        if y == len(self.maze_gen.maze[0]) - 1 and x == 0:
+        if row == last_row and col == 0:
             return True
-        if y == 0 and x == len(self.maze_gen.maze) - 1:
+        if row == 0 and col == last_col:
             return True
-        if (y == len(self.maze_gen.maze[0]) - 1 and
-                x == len(self.maze_gen.maze) - 1):
+        if row == last_row and col == last_col:
             return True
         return False

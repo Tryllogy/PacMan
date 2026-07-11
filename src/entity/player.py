@@ -12,19 +12,19 @@ from .. import constant
 class Player(Entity):
     def __init__(
         self,
-        x: int,
-        y: int,
-        origin_x: int,
-        origin_y: int,
+        pixel_x: int,
+        pixel_y: int,
+        origin_pixel_x: int,
+        origin_pixel_y: int,
         score: Score,
         lives: int = 0,
         points_per_pacgum: int = 1,
         points_per_super_pacgum: int = 5,
         points_per_ghost: int = 10,
     ) -> None:
-        super().__init__(x, y)
-        self.origin_x: int = origin_x
-        self.origin_y: int = origin_y
+        super().__init__(pixel_x, pixel_y)
+        self.origin_pixel_x: int = origin_pixel_x
+        self.origin_pixel_y: int = origin_pixel_y
         self.lives: int = lives
         self.points_per_pacgum: int = points_per_pacgum
         self.points_per_super_pacgum: int = points_per_super_pacgum
@@ -38,7 +38,6 @@ class Player(Entity):
         self.hitbox: pygame.Rect
         self.invincible: bool = False
 
-    # Sprites face right, every other direction is a rotation of them
     ROTATIONS: dict[Direction, int] = {
         Direction.UP: 90,
         Direction.DOWN: 270,
@@ -55,7 +54,7 @@ class Player(Entity):
             self.sprites.get(Direction.RIGHT, self.sprite_index),
             self.ROTATIONS[self.direction]
         )
-        screen.blit(sprite, (self.x, self.y))
+        screen.blit(sprite, (self.pixel_x, self.pixel_y))
 
     def get_sprites(
         self
@@ -70,11 +69,11 @@ class Player(Entity):
 
     def check_collision(
         self,
-        x: int,
-        y: int,
+        pixel_x: int,
+        pixel_y: int,
         entities: list[Wall | Pacgum | SuperPacgum]
     ) -> tuple[bool, Wall | Pacgum | SuperPacgum | None]:
-        self.update_hitbox(x, y)
+        self.update_hitbox(pixel_x, pixel_y)
         for entity in entities:
             if self.hitbox.colliderect(entity.rect):
                 return True, entity
@@ -82,8 +81,8 @@ class Player(Entity):
 
     def check_collision_with_phantoms(
         self,
-        x: int,
-        y: int,
+        pixel_x: int,
+        pixel_y: int,
         phantoms: list[Phantom]
     ) -> tuple[bool, Phantom | None]:
         if self.invincible:
@@ -100,16 +99,16 @@ class Player(Entity):
         walls: list[Wall],
         direction: Direction
     ) -> bool:
-        dx, dy = {
+        d_pixel_x, d_pixel_y = {
             Direction.UP: (0, -constant.PLAYER_SPEED),
             Direction.DOWN: (0, constant.PLAYER_SPEED),
             Direction.LEFT: (-constant.PLAYER_SPEED, 0),
             Direction.RIGHT: (constant.PLAYER_SPEED, 0),
             Direction.NONE: (0, 0)
         }[direction]
-        new_x:  int = self.x + dx * 2
-        new_y:  int = self.y + dy * 2
-        return not self.check_collision(new_x, new_y, walls)[0]
+        new_pixel_x: int = self.pixel_x + d_pixel_x * 2
+        new_pixel_y: int = self.pixel_y + d_pixel_y * 2
+        return not self.check_collision(new_pixel_x, new_pixel_y, walls)[0]
 
     def update(
         self,
@@ -118,31 +117,33 @@ class Player(Entity):
         super_pacgums: list[SuperPacgum] = [],
         phantoms: list[Phantom] = []
     ) -> None:
-        self.update_hitbox(self.x, self.y)
         if self.is_aligned() and self.can_move(walls, self.next_direction):
             self.direction = self.next_direction
         if self.can_move(walls, self.direction):
-            dx, dy = {
+            d_pixel_x, d_pixel_y = {
                 Direction.UP: (0, -constant.PLAYER_SPEED),
                 Direction.DOWN: (0, constant.PLAYER_SPEED),
                 Direction.LEFT: (-constant.PLAYER_SPEED, 0),
                 Direction.RIGHT: (constant.PLAYER_SPEED, 0),
                 Direction.NONE: (0, 0)
             }[self.direction]
-            self.x += dx
-            self.y += dy
+            self.pixel_x += d_pixel_x
+            self.pixel_y += d_pixel_y
+        self.update_hitbox(self.pixel_x, self.pixel_y)
         self.update_sprite()
-        if self.check_collision(self.x, self.y, pacgums)[0]:
+        if self.check_collision(self.pixel_x, self.pixel_y, pacgums)[0]:
             self.score.score += self.points_per_pacgum
-            pacgums.remove(self.check_collision(self.x, self.y, pacgums)[1])
-        if self.check_collision(self.x, self.y, super_pacgums)[0]:
+            pacgums.remove(self.check_collision(
+                self.pixel_x, self.pixel_y, pacgums)[1])
+        if self.check_collision(self.pixel_x, self.pixel_y, super_pacgums)[0]:
             self.score.score += self.points_per_super_pacgum
-            super_pacgums.remove(self.check_collision(self.x, self.y,
-                                                      super_pacgums)[1])
+            super_pacgums.remove(self.check_collision(
+                self.pixel_x, self.pixel_y,
+                super_pacgums)[1])
             for phantom in phantoms:
                 phantom.set_retreat_strategy()
         collision_with_phantom, phantom = self.check_collision_with_phantoms(
-            self.x, self.y, phantoms)
+            self.pixel_x, self.pixel_y, phantoms)
         if collision_with_phantom:
             if phantom.retreat:
                 phantom.set_spawn_strategy()
@@ -156,8 +157,8 @@ class Player(Entity):
     def reset_positions(
         self,
     ) -> None:
-        self.x = self.spawn_x
-        self.y = self.spawn_y
+        self.pixel_x = self.spawn_pixel_x
+        self.pixel_y = self.spawn_pixel_y
         self.direction = Direction.NONE
         self.next_direction = Direction.NONE
         self.sprite_index = 0
@@ -174,8 +175,13 @@ class Player(Entity):
 
     def update_hitbox(
         self,
-        x: int,
-        y: int
+        pixel_x: int,
+        pixel_y: int
     ) -> None:
-        w, h = self.sprites.size(Direction.RIGHT, self.sprite_index)
-        self.hitbox: pygame.Rect = pygame.Rect(x, y, w, h)
+        w, h = self.sprites.size(self.direction, self.sprite_index)
+        self.hitbox: pygame.Rect = pygame.Rect(
+            pixel_x,
+            pixel_y,
+            w,
+            h
+        )

@@ -1,9 +1,10 @@
-import json
 import os
 import pygame
 from .scene import Scene, GameState
 from ..parsing import Data
-from ..entity import Score
+from ..entity import (
+    Score, save_highscore, sanitize_name_char,
+)
 from .. import constant
 
 
@@ -23,6 +24,7 @@ class EndScene(Scene):
         state: GameState,
         title: str,
         title_color: tuple[int, int, int],
+        subtitle: str = "",
     ) -> None:
         super().__init__(screen)
         self.current_scene = state.value
@@ -30,6 +32,12 @@ class EndScene(Scene):
         self.title_text = self.font.render(title, True, title_color)
         self.title_text_rect = self.title_text.get_rect(
             center=self.middle_screen)
+        self.subtitle_text: pygame.Surface | None = None
+        if subtitle:
+            self.subtitle_text = self.font.render(
+                subtitle, True, (255, 255, 255))
+            self.subtitle_text_rect = self.subtitle_text.get_rect(
+                center=(self.middle_screen[0], self.middle_screen[1] - 60))
         self.name_user: str = ""
         self.score: Score = score
         self.config: Data = config
@@ -37,24 +45,11 @@ class EndScene(Scene):
     def write_name_to_file(
         self
     ) -> bool:
-        if len(self.name_user) == 0:
+        if len(self.name_user.strip()) == 0:
             return False
         file_path = os.path.join(constant.SCORE_DIR,
                                  self.config.highscore_filename)
-        if not os.path.exists(constant.SCORE_DIR):
-            os.makedirs(constant.SCORE_DIR)
-        scores: list = []
-        if os.path.exists(file_path):
-            try:
-                with open(file_path, "r") as f:
-                    scores = json.load(f)
-                if not isinstance(scores, list):
-                    scores = []
-            except (json.JSONDecodeError, ValueError):
-                scores = []
-        scores.append({"name": self.name_user, "score": self.score.score})
-        with open(file_path, "w") as f:
-            json.dump(scores, f, indent=4)
+        save_highscore(file_path, self.name_user, self.score.score)
         self.name_user = ""
         return True
 
@@ -84,8 +79,9 @@ class EndScene(Scene):
                     if self.write_name_to_file():
                         return GameState.MAIN.value
                 else:
-                    if len(self.name_user) <= 5:
-                        self.name_user += event.unicode
+                    char = sanitize_name_char(event.unicode)
+                    if char and len(self.name_user) < constant.MAX_NAME_LENGTH:
+                        self.name_user += char
         return self.current_scene
 
     def draw(
@@ -93,6 +89,8 @@ class EndScene(Scene):
     ) -> None:
         super().draw()
         self.screen.blit(self.title_text, self.title_text_rect)
+        if self.subtitle_text is not None:
+            self.screen.blit(self.subtitle_text, self.subtitle_text_rect)
         score_txt = self.font.render(
             f"Your score: {self.score.score}", True, (255, 255, 255))
         score_txt_rect = score_txt.get_rect(

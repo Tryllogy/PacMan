@@ -1,7 +1,7 @@
 import pygame
-import json
 from .scene import Scene, GameState
 from .button import Button
+from ..entity import load_highscores
 from .. import constant
 
 
@@ -30,12 +30,8 @@ class HighscoreScene(Scene):
     def retrieve_highscores(
         self
     ) -> None:
-        try:
-            with open(constant.SCORE_DIR + self.filename, "r") as f:
-                self.highscores: list[dict] = json.loads(f.read())
-            self.highscores.sort(key=lambda x: x["score"], reverse=True)
-        except FileNotFoundError:
-            self.highscores: list[dict] = []
+        self.highscores: list[dict] = load_highscores(
+            constant.SCORE_DIR + self.filename)
 
     def back_main(
         self

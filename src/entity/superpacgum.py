@@ -5,14 +5,14 @@ from .. import constant
 class SuperPacgum:
     def __init__(
         self,
-        x: int,
-        y: int
+        pixel_x: int,
+        pixel_y: int
     ):
-        self.x: int = x
-        self.y: int = y
+        self.pixel_x: int = pixel_x
+        self.pixel_y: int = pixel_y
         self.rect: pygame.Rect = pygame.Rect(
-            self.x - constant.SUPERPACGUM_SIZE // 2,
-            self.y - constant.SUPERPACGUM_SIZE // 2,
+            self.pixel_x - constant.SUPERPACGUM_SIZE // 2,
+            self.pixel_y - constant.SUPERPACGUM_SIZE // 2,
             constant.SUPERPACGUM_SIZE,
             constant.SUPERPACGUM_SIZE
         )

@@ -24,7 +24,7 @@ class InstructionsScene(Scene):
         )
         self.instructions_text: str = (
             "Instructions:\n"
-            "Use the arrow keys to move Pac-Man.\n"
+            "Use the arrow keys or WASD to move Pac-Man.\n"
             "Eat all the dots to win!\n"
             "Avoid the ghosts or you'll lose a life.\n"
             "Press 'I' to toggle invincibility.\n"

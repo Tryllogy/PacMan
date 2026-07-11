@@ -14,4 +14,5 @@ class WinScene(EndScene):
     ) -> None:
         super().__init__(
             screen, config, score,
-            GameState.WIN, "You Win!", (0, 255, 0))
+            GameState.WIN, "You Win!", (0, 255, 0),
+            subtitle="Congratulations, you cleared every level!")
