@@ -13,6 +13,6 @@ class AggressiveStrategy(Strategy):
         self,
         phantom_cell: tuple[int, int],
         player_cell: tuple[int, int],
-        _: tuple[int, int]
+        prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
         return self.get_path(phantom_cell, player_cell)

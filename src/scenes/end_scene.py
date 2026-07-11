@@ -64,7 +64,7 @@ class EndScene(Scene):
 
     def handle_events(
         self,
-        events
+        events: list[pygame.event.Event]
     ) -> str:
         for event in events:
             if event.type == pygame.KEYDOWN:

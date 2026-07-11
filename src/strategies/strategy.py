@@ -45,11 +45,11 @@ class Strategy(ABC):
             tuple[int, int],
             tuple[int, int]]
     ) -> list[tuple[int, int]]:
-        result = []
+        result: list[tuple[int, int]] = []
         tmp = cell
-        while parents.get(tmp) is not None:
+        while tmp in parents:
             result.append(tmp)
-            tmp = parents.get(tmp)
+            tmp = parents[tmp]
         result.reverse()
         return result
 

@@ -26,8 +26,8 @@ class ZoneStrategy(Strategy):
         self,
         phantom_cell: tuple[int, int],
         player_cell: tuple[int, int],
-        prev_phantom_cell: tuple[int, int]
-    ):
+        prev_phantom_cell: tuple[int, int] | None = None
+    ) -> list[tuple[int, int]]:
         if len(self.zone) == 0:
             self.make_zone()
         goal_cell = random.choice(self.zone)
@@ -36,7 +36,7 @@ class ZoneStrategy(Strategy):
 
     def make_zone(
         self,
-    ) -> bool:
+    ) -> None:
         rows = random.sample(self.possible_rows, 2)
         cols = random.sample(self.possible_cols, 2)
         start_row, end_row = min(rows), max(rows)

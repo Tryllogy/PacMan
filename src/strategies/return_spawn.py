@@ -14,8 +14,8 @@ class ReturnToSpawnStrategy(Strategy):
 
     def movement(
         self,
-        phantom_cell,
-        player_cell,
-        prev_phantom_cell=None
+        phantom_cell: tuple[int, int],
+        player_cell: tuple[int, int],
+        prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
         return self.get_path(phantom_cell, self.target_cell)

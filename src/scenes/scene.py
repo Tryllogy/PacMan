@@ -4,22 +4,25 @@ import pygame
 
 
 class GameState(Enum):
-    MAIN: str = "main_menu"
-    GAME: str = "game"
-    PAUSE: str = "pause"
-    WIN: str = "win"
-    LOSE: str = "lose"
-    HIGHSCORE: str = "highscore"
-    INSTRUCTIONS: str = "instructions"
+    MAIN = "main_menu"
+    GAME = "game"
+    PAUSE = "pause"
+    WIN = "win"
+    LOSE = "lose"
+    HIGHSCORE = "highscore"
+    INSTRUCTIONS = "instructions"
 
 
 class Scene(ABC):
     def __init__(
             self,
             screen: pygame.Surface
-    ):
+    ) -> None:
         self.font: pygame.font.Font = pygame.font.Font(None, 40)
         self.screen: pygame.Surface = screen
+        self.current_scene: str = ""
+        self.base_scene: str = ""
+        self.middle_screen: tuple[int, int] = (0, 0)
         self.get_middle_screen(screen)
 
     def get_middle_screen(
@@ -34,12 +37,12 @@ class Scene(ABC):
     @abstractmethod
     def handle_events(
         self,
-        events
-    ) -> GameState:
+        events: list[pygame.event.Event]
+    ) -> str:
         pass
 
     @abstractmethod
-    def update(self) -> None:
+    def update(self) -> str:
         pass
 
     @abstractmethod

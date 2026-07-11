@@ -1,7 +1,7 @@
 import copy
 import json5
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
 
@@ -92,7 +92,7 @@ class Parser():
                     return Data()
         return Data()
 
-    def _repair(self, data: dict, err: dict) -> bool:
+    def _repair(self, data: dict, err: Mapping[str, Any]) -> bool:
         loc = list(err.get('loc', ()))
         msg = err.get('msg', 'invalid value')
         if not loc:

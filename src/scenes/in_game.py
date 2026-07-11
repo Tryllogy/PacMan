@@ -11,10 +11,10 @@ import pygame
 
 
 class Walls(Enum):
-    N: int = 1
-    E: int = 2
-    S: int = 4
-    W: int = 8
+    N = 1
+    E = 2
+    S = 4
+    W = 8
 
 
 class InGameScene(Scene):
@@ -39,7 +39,7 @@ class InGameScene(Scene):
         self.maze_gen: MazeGenerator = maze_gen
         self.level_index: int = 0
         self.phantoms: list[Phantom] = []
-        self.player: Player | None = None
+        self.player: Player
         self.maze_origin: tuple[int, int] = self.get_offset()
         self.walls: list[Wall] = []
         self.pacgums: list[Pacgum] = []
@@ -98,7 +98,7 @@ class InGameScene(Scene):
 
     def handle_events(
         self,
-        events
+        events: list[pygame.event.Event]
     ) -> str:
         for event in events:
             if event.type == pygame.USEREVENT + 1:
@@ -195,13 +195,13 @@ class InGameScene(Scene):
 
     def get_offset(
         self
-    ) -> None:
+    ) -> tuple[int, int]:
         maze_height_px = len(self.maze_gen.maze) * constant.WALL_HEIGHT
         maze_width_px = len(self.maze_gen.maze[0]) * constant.WALL_HEIGHT
         self.maze_size_px: tuple[int, int] = (maze_height_px, maze_width_px)
         maze_origin: tuple[int, int] = (
-            self.middle_screen[0] - maze_width_px / 2,
-            self.middle_screen[1] - maze_height_px / 2
+            int(self.middle_screen[0] - maze_width_px / 2),
+            int(self.middle_screen[1] - maze_height_px / 2)
         )
         return maze_origin
 
@@ -224,7 +224,7 @@ class InGameScene(Scene):
         lives: int,
     ) -> None:
         middle_row, middle_col = self.find_open_middle_maze()
-        offset_player: int = constant.WALL_WIDTH * 1.3
+        offset_player: int = int(constant.WALL_WIDTH * 1.3)
 
         pixel_x: int = middle_col * constant.WALL_HEIGHT
         pixel_y: int = middle_row * constant.WALL_HEIGHT
@@ -243,7 +243,8 @@ class InGameScene(Scene):
     def make_pacgum(
         self
     ) -> None:
-        offset_pacgum: int = constant.WALL_HEIGHT / 2 + constant.WALL_WIDTH / 2
+        offset_pacgum: int = int(
+            constant.WALL_HEIGHT / 2 + constant.WALL_WIDTH / 2)
         for row, line in enumerate(self.maze_gen.maze):
             for col, value in enumerate(line):
                 if value == 15:
@@ -262,8 +263,8 @@ class InGameScene(Scene):
                         pixel_y + self.maze_origin[1] + offset_pacgum
                     ))
 
-    def make_phantom(self):
-        offset_phantom: int = constant.WALL_WIDTH * 1.3
+    def make_phantom(self) -> None:
+        offset_phantom: int = int(constant.WALL_WIDTH * 1.3)
         maze_height_px, maze_width_px = self.maze_size_px
         maze_height_px -= constant.WALL_HEIGHT
         maze_width_px -= constant.WALL_HEIGHT

@@ -1,4 +1,5 @@
 import pygame
+from collections.abc import Sequence
 from .entity import Direction, Entity
 from .sprite import SpriteSet, load_scaled
 from .phantom import Phantom
@@ -48,7 +49,7 @@ class Player(Entity):
 
     def draw(
         self,
-        screen
+        screen: pygame.Surface
     ) -> None:
         sprite = pygame.transform.rotate(
             self.sprites.get(Direction.RIGHT, self.sprite_index),
@@ -71,7 +72,7 @@ class Player(Entity):
         self,
         pixel_x: int,
         pixel_y: int,
-        entities: list[Wall | Pacgum | SuperPacgum]
+        entities: Sequence[Wall | Pacgum | SuperPacgum]
     ) -> tuple[bool, Wall | Pacgum | SuperPacgum | None]:
         self.update_hitbox(pixel_x, pixel_y)
         for entity in entities:
@@ -131,24 +132,25 @@ class Player(Entity):
             self.pixel_y += d_pixel_y
         self.update_hitbox(self.pixel_x, self.pixel_y)
         self.update_sprite()
-        if self.check_collision(self.pixel_x, self.pixel_y, pacgums)[0]:
+        hit_pacgum, pacgum = self.check_collision(
+            self.pixel_x, self.pixel_y, pacgums)
+        if hit_pacgum and isinstance(pacgum, Pacgum):
             self.score.score += self.points_per_pacgum
-            pacgums.remove(self.check_collision(
-                self.pixel_x, self.pixel_y, pacgums)[1])
-        if self.check_collision(self.pixel_x, self.pixel_y, super_pacgums)[0]:
+            pacgums.remove(pacgum)
+        hit_super, super_pacgum = self.check_collision(
+            self.pixel_x, self.pixel_y, super_pacgums)
+        if hit_super and isinstance(super_pacgum, SuperPacgum):
             self.score.score += self.points_per_super_pacgum
-            super_pacgums.remove(self.check_collision(
-                self.pixel_x, self.pixel_y,
-                super_pacgums)[1])
+            super_pacgums.remove(super_pacgum)
             for phantom in phantoms:
                 phantom.set_retreat_strategy()
-        collision_with_phantom, phantom = self.check_collision_with_phantoms(
+        collided, hit_phantom = self.check_collision_with_phantoms(
             self.pixel_x, self.pixel_y, phantoms)
-        if collision_with_phantom:
-            if phantom.retreat:
-                phantom.set_spawn_strategy()
+        if collided and hit_phantom is not None:
+            if hit_phantom.retreat:
+                hit_phantom.set_spawn_strategy()
                 self.score.score += self.points_per_ghost
-            elif not phantom.retreat and not phantom.to_spawn:
+            elif not hit_phantom.retreat and not hit_phantom.to_spawn:
                 self.lives -= 1
                 self.reset_positions()
                 for phantom in phantoms:
@@ -179,7 +181,7 @@ class Player(Entity):
         pixel_y: int
     ) -> None:
         w, h = self.sprites.size(self.direction, self.sprite_index)
-        self.hitbox: pygame.Rect = pygame.Rect(
+        self.hitbox = pygame.Rect(
             pixel_x,
             pixel_y,
             w,

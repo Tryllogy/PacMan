@@ -20,7 +20,7 @@ class SuperPacgum:
     def draw(
         self,
         screen: pygame.Surface,
-    ):
+    ) -> None:
         pygame.draw.circle(
             screen,
             constant.SUPERPACGUM_COLOR,

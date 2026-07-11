@@ -20,8 +20,8 @@ class RetreatStrategy(Strategy):
         result = [cell]
         tmp = cell
         rev_parents = {v: k for k, v in parents.items()}
-        while rev_parents.get(tmp) is not None:
-            tmp = rev_parents.get(tmp)
+        while tmp in rev_parents:
+            tmp = rev_parents[tmp]
             result.append(tmp)
         return result
 
@@ -44,18 +44,20 @@ class RetreatStrategy(Strategy):
             return True
         return False
 
-    def get_path(
+    def retreat_step(
         self,
         phantom_cell: tuple[int, int],
         player_cell: tuple[int, int],
-        prev_phantom_cell: tuple[int, int]
+        prev_phantom_cell: tuple[int, int] | None
     ) -> list[tuple[int, int]]:
         lst_adj = self.get_adj(phantom_cell, self.map_grid)
         for adj in lst_adj:
             if self.is_away(phantom_cell, adj, player_cell):
                 return [adj]
-        if len(lst_adj) > 1:
-            lst_adj.pop(lst_adj.index(prev_phantom_cell))
+        if len(lst_adj) > 1 and prev_phantom_cell in lst_adj:
+            lst_adj.remove(prev_phantom_cell)
+        if not lst_adj:
+            return [phantom_cell]
         return [random.choice(lst_adj)]
 
     def movement(
@@ -64,4 +66,4 @@ class RetreatStrategy(Strategy):
         player_cell: tuple[int, int],
         prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
-        return self.get_path(phantom_cell, player_cell, prev_phantom_cell)
+        return self.retreat_step(phantom_cell, player_cell, prev_phantom_cell)

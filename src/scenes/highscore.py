@@ -39,7 +39,7 @@ class HighscoreScene(Scene):
         self.current_scene = GameState.MAIN.value
         return self.current_scene
 
-    def handle_events(self, events):
+    def handle_events(self, events: list[pygame.event.Event]) -> str:
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.current_scene = GameState.MAIN.value

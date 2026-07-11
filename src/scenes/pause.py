@@ -4,7 +4,7 @@ from .button import Button
 
 
 class PauseScene(Scene):
-    def __init__(self, screen):
+    def __init__(self, screen: pygame.Surface) -> None:
         super().__init__(screen)
         self.current_scene = GameState.PAUSE.value
         self.base_scene = self.current_scene
@@ -35,7 +35,7 @@ class PauseScene(Scene):
             self.font
         )
 
-    def handle_events(self, events):
+    def handle_events(self, events: list[pygame.event.Event]) -> str:
         for event in events:
             self.main_menu_button.handle_event(event)
             self.exit_button.handle_event(event)
@@ -59,7 +59,7 @@ class PauseScene(Scene):
 
     def draw(
         self,
-    ):
+    ) -> None:
         super().draw()
         self.screen.blit(self.pause_text, self.pause_text_rect)
         self.main_menu_button.draw(self.screen)

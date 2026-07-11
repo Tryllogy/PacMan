@@ -19,7 +19,7 @@ class Converter():
         self.offset_x = (self.screen_width - self.maze_width_px) / 2
         self.offset_y = (self.screen_height - self.maze_height_px) / 2
 
-    def cell_to_pixel(self, cell: tuple[int, int]) -> tuple[int, int]:
+    def cell_to_pixel(self, cell: tuple[int, int]) -> tuple[float, float]:
         row, col = cell
         pixel_x = col * self.cell_width_px + self.offset_x \
             + constant.WALL_WIDTH * 1.3

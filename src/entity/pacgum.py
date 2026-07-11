@@ -20,7 +20,7 @@ class Pacgum:
     def draw(
         self,
         screen: pygame.Surface,
-    ):
+    ) -> None:
         pygame.draw.circle(
             screen,
             constant.PACGUM_COLOR,

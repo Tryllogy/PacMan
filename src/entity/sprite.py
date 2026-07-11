@@ -33,7 +33,8 @@ class SpriteSet():
         direction: Direction,
         frame: int = 0
     ) -> tuple[int, int]:
-        return self.get(direction, frame).get_size()
+        width, height = self.get(direction, frame).get_size()
+        return (int(width), int(height))
 
     def frame_count(
         self,

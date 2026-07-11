@@ -11,9 +11,10 @@ class RandomStrategy(Strategy):
     ) -> None:
         super().__init__(map_grid=map_grid, name=name)
         self.target_cell: tuple[int, int] = phantom_cell
+        self.phantom_cell: tuple[int, int] = phantom_cell
         self.path: list[tuple[int, int]] = []
 
-    def get_goal(self):
+    def get_goal(self) -> tuple[int, int]:
         available_cells: list[tuple[int, int]] = []
         for row, line in enumerate(self.map_grid):
             for col, value in enumerate(line):
@@ -29,7 +30,7 @@ class RandomStrategy(Strategy):
         self,
         phantom_cell: tuple[int, int],
         player_cell: tuple[int, int],
-        prev_phantom_cell: tuple[int, int]
+        prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
         self.phantom_cell = phantom_cell
         if self.target_cell == self.phantom_cell:

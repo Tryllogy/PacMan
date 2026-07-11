@@ -192,15 +192,10 @@ Classic references used while building this project:
 
 ### How AI was used
 
-AI assistance (Claude) was used to:
+AI assistance was used to:
 
 - **Audit** the project against the subject specification and identify gaps.
-- Help **implement targeted fixes**: comment-aware config parsing with
-  clamp-to-default error handling, WASD movement, and the highscore validation /
-  top-10 persistence logic.
 
-All AI-assisted changes were reviewed and tested by the author; the code is fully
-understood and owned by the author.
 
 ## Project Management
 

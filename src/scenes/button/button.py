@@ -1,4 +1,5 @@
 import pygame
+from typing import Callable
 from ... import constant
 
 color = tuple[int, int, int]
@@ -12,12 +13,12 @@ class Button:
         w: int,
         h: int,
         text: str,
-        callback: callable,
+        callback: Callable[[], object],
         font: pygame.font.Font,
     ) -> None:
         self.rect: pygame.Rect = pygame.Rect(x, y, w, h)
         self.text: str = text
-        self.callback: callable = callback
+        self.callback: Callable[[], object] = callback
         self.font: pygame.font.Font = font
         self.base_color: color = constant.BUTTON_COLOR_BASE
         self.hover_color: color = constant.BUTTON_COLOR_HOVER
@@ -25,7 +26,7 @@ class Button:
 
     def draw(
         self,
-        screen
+        screen: pygame.Surface
     ) -> None:
         color = self.hover_color if self.hovered else self.base_color
 
@@ -37,7 +38,7 @@ class Button:
 
     def handle_event(
         self,
-        event
+        event: pygame.event.Event
     ) -> None:
         if event.type == pygame.MOUSEMOTION:
             self.hovered = self.rect.collidepoint(event.pos)

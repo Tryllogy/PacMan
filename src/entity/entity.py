@@ -5,11 +5,11 @@ from .. import constant
 
 
 class Direction(Enum):
-    UP: str = "up"
-    DOWN: str = "down"
-    LEFT: str = "left"
-    RIGHT: str = "right"
-    NONE: str = "none"
+    UP = "up"
+    DOWN = "down"
+    LEFT = "left"
+    RIGHT = "right"
+    NONE = "none"
 
     @classmethod
     def from_cell_delta(
@@ -40,6 +40,8 @@ class Entity(ABC):
         self.pixel_y: int = pixel_y
         self.spawn_pixel_x: int = pixel_x
         self.spawn_pixel_y: int = pixel_y
+        self.origin_pixel_x: int = pixel_x
+        self.origin_pixel_y: int = pixel_y
 
     @abstractmethod
     def draw(

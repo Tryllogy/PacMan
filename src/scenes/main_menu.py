@@ -17,7 +17,7 @@ EXIT_Y = (constant.BUTTON_HEIGHT + 200)
 class MainScene(Scene):
     def __init__(
         self,
-        screen
+        screen: pygame.Surface
     ) -> None:
         super().__init__(screen)
         self.current_scene = GameState.MAIN.value
@@ -64,7 +64,7 @@ class MainScene(Scene):
             self.font
         )
 
-    def exit_program(self):
+    def exit_program(self) -> None:
         import pygame
         import sys
         pygame.quit()
@@ -90,7 +90,7 @@ class MainScene(Scene):
 
     def handle_events(
         self,
-        events
+        events: list[pygame.event.Event]
     ) -> str:
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:

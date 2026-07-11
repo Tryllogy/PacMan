@@ -10,12 +10,12 @@ from .. import constant
 
 
 class PhantomColor(Enum):
-    PURPLE: str = "purple"
-    BLUE: str = "blue"
-    GREEN: str = "green"
-    RED: str = "red"
+    PURPLE = "purple"
+    BLUE = "blue"
+    GREEN = "green"
+    RED = "red"
 
-    ALL_COLORS: list[str] = [
+    ALL_COLORS = [
         PURPLE,
         BLUE,
         GREEN,
@@ -118,7 +118,7 @@ class Phantom(Entity):
         else:
             return 0
 
-    def move(self, player_cell: tuple[int, int]):
+    def move(self, player_cell: tuple[int, int]) -> None:
         if self.next_cell == self.cell:
             self.update_path(player_cell)
             try:
@@ -195,14 +195,14 @@ class Phantom(Entity):
 
     def update(
         self,
-        player_cell
+        player_cell: tuple[int, int]
     ) -> None:
         self.update_hitbox(self.pixel_x, self.pixel_y)
         if self.to_spawn and self.cell == self.spawn_cell:
             self.strategy = self.original_strategy
         self.move(player_cell)
 
-    def reset_strategy(self):
+    def reset_strategy(self) -> None:
         self.strategy = self.original_strategy
         self.scared_sprite_index = 0
 
