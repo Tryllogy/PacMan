@@ -17,21 +17,28 @@ DEFAULT_CONFIG = {
 
 
 class ErrorParsing(Exception):
+    """Raised when the configuration file cannot be parsed."""
+
     def __init__(self, *args: str) -> None:
         super().__init__(*args)
 
 
 def _default_levels() -> list["Level"]:
+    """Return the 10 default levels used when none are provided."""
     return [Level(name=f"Level {i + 1}") for i in range(10)]
 
 
 class Level(BaseModel):
+    """A single game level with its name and grid dimensions."""
+
     name: str = Field(default="Level", min_length=1, max_length=20)
     width: int = Field(ge=10, default=10)
     height: int = Field(ge=10, default=10)
 
 
 class Data(BaseModel):
+    """Validated game configuration with defaults for every field."""
+
     highscore_filename: str = 'score.json'
     levels: list[Level] = Field(default_factory=_default_levels, min_length=10)
     lives: int = Field(ge=3, default=3)
@@ -43,6 +50,7 @@ class Data(BaseModel):
 
     @model_validator(mode='after')
     def filename_validator(self) -> 'Data':
+        """Force 'highscore_filename' back to the default if it isn't a .json."""
         if not self.highscore_filename.endswith('.json'):
             print(
                 "Config: 'highscore_filename' is not a .json file "
@@ -53,10 +61,13 @@ class Data(BaseModel):
 
 
 class Parser():
+    """Read a config file and expose it as validated :class:`Data`."""
+
     def __init__(self, path: Path) -> None:
+        """Parse ``path``, falling back to defaults if it can't be read."""
         self.path = path
+        self.duplicate_keys: set[str] = set()
         try:
-            self.check_duplicate_keys()
             self.data = self.clean_json()
         except Exception:
             print(f"Config: failed to parse {self.path}; "
@@ -64,6 +75,7 @@ class Parser():
             self.data = Data()
 
     def clean_json(self) -> Any:
+        """Strip ``#`` comments outside strings and parse the JSON5 content."""
         result = ""
         i = 0
         in_string = False
@@ -82,9 +94,10 @@ class Parser():
                         continue
                 result += c
                 i += 1
-        return json5.loads(result)
+        return json5.loads(result, object_pairs_hook=self._dedup)
 
     def get_data(self) -> Data:
+        """Return the validated config, unwrapping a list-wrapped root object."""
         raw = self.data
         if isinstance(raw, list):
             raw = raw[0] if raw else {}
@@ -99,24 +112,19 @@ class Parser():
         On any validation error, the offending value is dropped (so the field
         default applies), a clear message is logged, and validation is retried.
         """
-        seen: set[str] = set()
+        duplicate_keys: set[str] = getattr(self, "duplicate_keys", set())
         copy_data: dict = copy.deepcopy(raw)
         data: dict = {}
         for k, v in copy_data.items():
             if k not in DEFAULT_CONFIG:
                 print(f"Config: unknown key '{k}'; ignoring it")
-            elif k in self.duplicate_keys:
+            else:
+                data[k] = v
+        for k in DEFAULT_CONFIG:
+            if k in duplicate_keys:
                 print(f"Config: duplicate key '{k}' found; using "
                       "default value")
-                del DEFAULT_CONFIG[k]
-            else:
-                seen.add(k)
-                data.update({k: v})
-        for s in seen:
-            if s in DEFAULT_CONFIG:
-                del DEFAULT_CONFIG[s]
-        for k, v in DEFAULT_CONFIG.items():
-            if k not in data:
+            elif k not in data:
                 print(f"Config: missing key '{k}'; using default value")
         for _ in range(100):
             try:
@@ -128,6 +136,12 @@ class Parser():
         return Data()
 
     def _repair(self, data: dict, err: Mapping[str, Any]) -> bool:
+        """Drop the value flagged by one pydantic error; return whether it did.
+
+        Locates the offending field from the error's ``loc`` path and removes
+        it (or the invalid level) so its default applies. Returns ``False`` when
+        nothing could be repaired, letting the caller give up.
+        """
         loc = list(err.get('loc', ()))
         msg = err.get('msg', 'invalid value')
         if not loc:
@@ -156,21 +170,19 @@ class Parser():
             return True
         return False
 
-    def check_duplicate_keys(self) -> None:
-        """Check for duplicate keys in the JSON file."""
-        with open(self.path) as f:
-            raw_file = f.read()
-            try:
-                json5.loads(raw_file, object_pairs_hook=self._check_duplicates)
-            except ValueError as e:
-                print(f"Config: error parsing JSON file: {e}")
+    def _dedup(self, pairs: list[tuple[str, Any]]) -> dict:
+        """Drop duplicate keys from every object so defaults apply.
 
-    def _check_duplicates(self, pairs: list[tuple[str, Any]]) -> dict:
-        seen = set()
-        self.duplicate_keys = set()
+        Called by ``json5.loads`` for each JSON object (nested ones too). A key
+        appearing more than once is removed entirely from the object, so the
+        model default takes over. Duplicates in the top-level config object are
+        recorded in ``self.duplicate_keys`` for reporting; duplicates inside
+        nested objects (e.g. a level) are dropped silently.
+        """
+        counts: dict[str, int] = {}
         for key, _ in pairs:
-            if key in seen:
-                self.duplicate_keys.add(key)
-            else:
-                seen.add(key)
-        return dict(pairs)
+            counts[key] = counts.get(key, 0) + 1
+        duplicates = {k for k, c in counts.items() if c > 1}
+        if duplicates and any(k in DEFAULT_CONFIG for k in counts):
+            self.duplicate_keys |= duplicates
+        return {key: value for key, value in pairs if counts[key] == 1}
