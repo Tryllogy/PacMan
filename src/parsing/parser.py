@@ -4,6 +4,17 @@ from pathlib import Path
 from typing import Any, Mapping
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
+DEFAULT_CONFIG = {
+    "highscore_filename": "score.json",
+    "levels": [],
+    "lives": 3,
+    "points_per_pacgum": 10,
+    "points_per_super_pacgum": 50,
+    "points_per_ghost": 200,
+    "seed": 42,
+    "level_max_time": 90
+}
+
 
 class ErrorParsing(Exception):
     def __init__(self, *args: str) -> None:
@@ -45,6 +56,7 @@ class Parser():
     def __init__(self, path: Path) -> None:
         self.path = path
         try:
+            self.check_duplicate_keys()
             self.data = self.clean_json()
         except Exception:
             print(f"Config: failed to parse {self.path}; "
@@ -87,7 +99,25 @@ class Parser():
         On any validation error, the offending value is dropped (so the field
         default applies), a clear message is logged, and validation is retried.
         """
-        data: dict = copy.deepcopy(raw)
+        seen: set[str] = set()
+        copy_data: dict = copy.deepcopy(raw)
+        data: dict = {}
+        for k, v in copy_data.items():
+            if k not in DEFAULT_CONFIG:
+                print(f"Config: unknown key '{k}'; ignoring it")
+            elif k in self.duplicate_keys:
+                print(f"Config: duplicate key '{k}' found; using "
+                      "default value")
+                del DEFAULT_CONFIG[k]
+            else:
+                seen.add(k)
+                data.update({k: v})
+        for s in seen:
+            if s in DEFAULT_CONFIG:
+                del DEFAULT_CONFIG[s]
+        for k, v in DEFAULT_CONFIG.items():
+            if k not in data:
+                print(f"Config: missing key '{k}'; using default value")
         for _ in range(100):
             try:
                 return Data.model_validate(data)
@@ -125,3 +155,22 @@ class Parser():
             del data[loc[0]]
             return True
         return False
+
+    def check_duplicate_keys(self) -> None:
+        """Check for duplicate keys in the JSON file."""
+        with open(self.path) as f:
+            raw_file = f.read()
+            try:
+                json5.loads(raw_file, object_pairs_hook=self._check_duplicates)
+            except ValueError as e:
+                print(f"Config: error parsing JSON file: {e}")
+
+    def _check_duplicates(self, pairs: list[tuple[str, Any]]) -> dict:
+        seen = set()
+        self.duplicate_keys = set()
+        for key, _ in pairs:
+            if key in seen:
+                self.duplicate_keys.add(key)
+            else:
+                seen.add(key)
+        return dict(pairs)
