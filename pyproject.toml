@@ -10,9 +10,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "pydantic>=2.0",
-    "pygame",
     "json5",
     "mazegenerator",
+    "mlx",
     "pyinstaller",
 ]
 
@@ -26,3 +26,4 @@ include = ["src*"]
 
 [tool.uv.sources]
 mazegenerator = { path = "mazegenerator-2.0.2-py3-none-any.whl" }
+mlx = { path = "mlx_CLXV/mlx-2.2-py3-none-any.whl" }
