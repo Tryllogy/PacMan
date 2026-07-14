@@ -49,7 +49,7 @@ RETREAT_TIME = 8
 RESPAWN_TIME = 10
 
 FPS = 60
-SCORE_DIR = os.path.join(_DATA_DIR, "score")
+SCORE_DIR = os.path.join(_DATA_DIR, "src", "score")
 SPRITE_DIR = os.path.join(_BUNDLE_DIR, "src", "sprites")
 
 MAX_HIGHSCORES = 10
