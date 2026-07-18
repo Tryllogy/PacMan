@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-import pygame
+from ..graphics import Surface, Font, Event
 
 
 class GameState(Enum):
@@ -16,18 +16,21 @@ class GameState(Enum):
 class Scene(ABC):
     def __init__(
             self,
-            screen: pygame.Surface
+            screen: Surface
     ) -> None:
-        self.font: pygame.font.Font = pygame.font.Font(None, 40)
-        self.screen: pygame.Surface = screen
+        self.font: Font = Font(None, 40)
+        self.screen: Surface = screen
         self.current_scene: str = ""
         self.base_scene: str = ""
         self.middle_screen: tuple[int, int] = (0, 0)
+        # Redraw (and present) only when the scene's content changed. Static
+        # screens draw once on entry; the game scene redraws every frame.
+        self.dirty: bool = True
         self.get_middle_screen(screen)
 
     def get_middle_screen(
             self,
-            screen: pygame.Surface
+            screen: Surface
     ) -> tuple[int, int]:
         width: int = screen.get_width() // 2
         height: int = screen.get_height() // 2
@@ -37,7 +40,7 @@ class Scene(ABC):
     @abstractmethod
     def handle_events(
         self,
-        events: list[pygame.event.Event]
+        events: list[Event]
     ) -> str:
         pass
 

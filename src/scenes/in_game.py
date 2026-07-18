@@ -5,9 +5,10 @@ from .scene import Scene, GameState
 from ..strategies import (AggressiveStrategy, RandomStrategy, ZoneStrategy)
 from ..entity import (Phantom, Player, Direction,
                       Wall, Pacgum, SuperPacgum, Score)
+from ..graphics import Event, EventType, Surface
+from ..graphics import events as ev
 from .. import constant
 from enum import Enum
-import pygame
 import math
 
 
@@ -21,7 +22,7 @@ class Walls(Enum):
 class InGameScene(Scene):
     def __init__(
         self,
-        screen: pygame.Surface,
+        screen: Surface,
         maze_gen: MazeGenerator,
         config: Data,
         score: Score
@@ -33,8 +34,6 @@ class InGameScene(Scene):
         self.points_per_ghost: int = config.points_per_ghost
         self.level_max_time: int = config.level_max_time
         self.timer: int = self.level_max_time
-        pygame.time.set_timer(pygame.USEREVENT + 1, 1000)
-        self.timer = self.level_max_time
         self.current_scene = GameState.GAME.value
         self.base_scene = self.current_scene
         self.maze_gen: MazeGenerator = maze_gen
@@ -99,33 +98,35 @@ class InGameScene(Scene):
 
     def handle_events(
         self,
-        events: list[pygame.event.Event]
+        events: list[Event]
     ) -> str:
         for event in events:
-            if event.type == pygame.USEREVENT + 1:
+            if (event.type == EventType.TIMER
+                    and event.timer_id == ev.TIMER_GAME):
                 if self.timer > 0:
                     self.timer -= 1
                     if self.timer <= 0:
                         self.current_scene = GameState.LOSE.value
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_i:
+            if event.type == EventType.KEYDOWN and event.key == ev.K_i:
                 self.player.invincible = not self.player.invincible
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+            if event.type == EventType.KEYDOWN and event.key == ev.K_p:
                 self.new_level()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if event.type == EventType.KEYDOWN and event.key == ev.K_ESCAPE:
                 self.current_scene = GameState.PAUSE.value
-            if event.type == pygame.KEYDOWN and event.key in (
-                    pygame.K_UP, pygame.K_w):
+            if event.type == EventType.KEYDOWN and event.key in (
+                    ev.K_UP, ev.K_w):
                 self.player.next_direction = Direction.UP
-            if event.type == pygame.KEYDOWN and event.key in (
-                    pygame.K_DOWN, pygame.K_s):
+            if event.type == EventType.KEYDOWN and event.key in (
+                    ev.K_DOWN, ev.K_s):
                 self.player.next_direction = Direction.DOWN
-            if event.type == pygame.KEYDOWN and event.key in (
-                    pygame.K_LEFT, pygame.K_a):
+            if event.type == EventType.KEYDOWN and event.key in (
+                    ev.K_LEFT, ev.K_a):
                 self.player.next_direction = Direction.LEFT
-            if event.type == pygame.KEYDOWN and event.key in (
-                    pygame.K_RIGHT, pygame.K_d):
+            if event.type == EventType.KEYDOWN and event.key in (
+                    ev.K_RIGHT, ev.K_d):
                 self.player.next_direction = Direction.RIGHT
-            if event.type == pygame.USEREVENT + 2:
+            if (event.type == EventType.TIMER
+                    and event.timer_id == ev.TIMER_GHOST):
                 for phantom in self.phantoms:
                     if phantom.retreat:
                         if phantom.retreat_timer > 0:
@@ -156,6 +157,7 @@ class InGameScene(Scene):
         self.draw_lives()
         self.draw_level()
         self.draw_timer()
+        self.draw_cheat()
 
     def generate_maze(
         self
@@ -172,6 +174,16 @@ class InGameScene(Scene):
         timer_text = self.font.render(f"Time: {self.timer}",
                                       True, (255, 255, 255))
         self.screen.blit(timer_text, (10, 130))
+
+    def draw_cheat(
+        self,
+    ) -> None:
+        if self.player.invincible:
+            state, color = "ON", (0, 255, 0)
+        else:
+            state, color = "OFF", (128, 128, 128)
+        cheat_text = self.font.render(f"Cheat: {state}", True, color)
+        self.screen.blit(cheat_text, (10, 170))
 
     def draw_score(
         self

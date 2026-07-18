@@ -1,116 +1,52 @@
-import pygame
 from .scene import Scene, GameState
-from .button import Button
 from .. import constant
+from ..graphics import Event, EventType, app, Surface
+from ..graphics import events as ev
 
 
-PLAY_X = -150
-PLAY_Y = -(constant.BUTTON_HEIGHT + 200)
-HIGHSCORE_X = -150
-HIGHSCORE_Y = -(constant.BUTTON_HEIGHT)
-INSTRUCTIONS_X = -150
-INSTRUCTIONS_Y = 100
-EXIT_X = -150
-EXIT_Y = (constant.BUTTON_HEIGHT + 200)
+MENU_LINES = [
+    ("PAC-MAN", (255, 255, 0), -160),
+    ("1 - Play", constant.TEXT_COLOR_BASE, -40),
+    ("2 - View highscore", constant.TEXT_COLOR_BASE, 0),
+    ("3 - Instructions", constant.TEXT_COLOR_BASE, 40),
+    ("ESC - Exit", constant.TEXT_COLOR_BASE, 80),
+]
 
 
 class MainScene(Scene):
     def __init__(
         self,
-        screen: pygame.Surface
+        screen: Surface
     ) -> None:
         super().__init__(screen)
         self.current_scene = GameState.MAIN.value
         self.base_scene = self.current_scene
-        mx, my = self.middle_screen
-
-        self.play_button: Button = Button(
-            mx + PLAY_X,
-            my + PLAY_Y,
-            constant.BUTTON_WIDTH,
-            constant.BUTTON_HEIGHT,
-            "Play",
-            self.start_game,
-            self.font
-        )
-
-        self.high_score_button: Button = Button(
-            mx + HIGHSCORE_X,
-            my + HIGHSCORE_Y,
-            constant.BUTTON_WIDTH,
-            constant.BUTTON_HEIGHT,
-            "View highscore",
-            self.view_highscore,
-            self.font
-        )
-
-        self.instructions_button: Button = Button(
-            mx + INSTRUCTIONS_X,
-            my + INSTRUCTIONS_Y,
-            constant.BUTTON_WIDTH,
-            constant.BUTTON_HEIGHT,
-            "Instructions",
-            self.view_instructions,
-            self.font
-        )
-
-        self.exit_button: Button = Button(
-            mx + EXIT_X,
-            my + EXIT_Y,
-            constant.BUTTON_WIDTH,
-            constant.BUTTON_HEIGHT,
-            "Exit",
-            self.exit_program,
-            self.font
-        )
-
-    def exit_program(self) -> None:
-        import pygame
-        import sys
-        pygame.quit()
-        sys.exit(0)
-
-    def view_instructions(
-        self
-    ) -> str:
-        self.current_scene = GameState.INSTRUCTIONS.value
-        return self.current_scene
-
-    def view_highscore(
-        self
-    ) -> str:
-        self.current_scene = GameState.HIGHSCORE.value
-        return self.current_scene
-
-    def start_game(
-        self,
-    ) -> str:
-        self.current_scene = GameState.GAME.value
-        return self.current_scene
 
     def handle_events(
         self,
-        events: list[pygame.event.Event]
+        events: list[Event]
     ) -> str:
         for event in events:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                pygame.quit()
-                import sys
-                sys.exit(0)
-            self.play_button.handle_event(event)
-            self.high_score_button.handle_event(event)
-            self.instructions_button.handle_event(event)
-            self.exit_button.handle_event(event)
+            if event.type != EventType.KEYDOWN:
+                continue
+            if event.key == ev.K_ESCAPE:
+                app.request_exit()
+            elif event.key == ev.K_1:
+                self.current_scene = GameState.GAME.value
+            elif event.key == ev.K_2:
+                self.current_scene = GameState.HIGHSCORE.value
+            elif event.key == ev.K_3:
+                self.current_scene = GameState.INSTRUCTIONS.value
         return self.current_scene
 
     def draw(
         self,
     ) -> None:
         super().draw()
-        self.play_button.draw(self.screen)
-        self.high_score_button.draw(self.screen)
-        self.instructions_button.draw(self.screen)
-        self.exit_button.draw(self.screen)
+        mx, my = self.middle_screen
+        for text, color, dy in MENU_LINES:
+            surface = self.font.render(text, True, color)
+            self.screen.blit(surface, surface.get_rect(center=(mx, my + dy)))
 
     def update(
         self
