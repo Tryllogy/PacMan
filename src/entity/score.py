@@ -24,13 +24,19 @@ def load_highscores(file_path: str) -> list[dict[str, Any]]:
     and malformed entries are ignored (never raises).
     """
     if not os.path.exists(file_path):
+        print(f"Highscore file {file_path} does not exist, returning "
+              "empty list.")
         return []
     try:
         with open(file_path, "r") as f:
             raw = json.load(f)
     except (json.JSONDecodeError, ValueError, OSError):
+        print(f"Error occurred while loading highscore file {file_path}, "
+              "returning empty list.")
         return []
     if not isinstance(raw, list):
+        print(f"Highscore file {file_path} does not contain a list,"
+              " returning empty list.")
         return []
     scores: list[dict[str, Any]] = []
     for entry in raw:
