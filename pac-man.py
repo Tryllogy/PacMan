@@ -5,7 +5,7 @@ from src.scenes import (
     HighscoreScene, InstructionsScene
 )
 from src import constant
-import pygame
+from src.graphics import app, Event
 import sys
 from src.entity import Score
 from src.parsing.parser import Parser, Data
@@ -32,10 +32,10 @@ def main() -> None:
         print(f"Invalid config file: {e}")
         sys.exit(1)
 
-    pygame.init()
-    screen = pygame.display.set_mode(
-        (constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT))
-    pygame.display.set_caption("PacMan")
+    app.init(constant.SCREEN_WIDTH, constant.SCREEN_HEIGHT, "PacMan",
+             fps=constant.FPS)
+    screen = app.screen
+    assert screen is not None
     score: Score = Score()
 
     def new_game_scene() -> InGameScene:
@@ -57,19 +57,11 @@ def main() -> None:
                                                   config.highscore_filename),
         GameState.INSTRUCTIONS.value: InstructionsScene(screen),
     }
-    current_scene: str = GameState.MAIN.value
-    pygame.display.toggle_fullscreen()
-    clock = pygame.time.Clock()
-    running = True
-    while running:
-        events = pygame.event.get()
-        screen.fill((0, 0, 0))
+    current_scene = GameState.MAIN.value
+    rendered_scene: str | None = None
 
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit(0)
-
+    def frame(events: list[Event]) -> None:
+        nonlocal current_scene, rendered_scene
         prev_scene = current_scene
         next_scene = scenes[current_scene].handle_events(events)
         if (prev_scene == GameState.MAIN.value
@@ -79,13 +71,19 @@ def main() -> None:
 
         next_scene = scenes[current_scene].update()
         current_scene = next_scene
-        scenes[current_scene].draw()
+
+        scene = scenes[current_scene]
+        if (current_scene == GameState.GAME.value
+                or current_scene != rendered_scene
+                or scene.dirty):
+            scene.draw()
+            scene.dirty = False
+            rendered_scene = current_scene
+            app.mark_dirty()
 
         reset_all_scenes(scenes)
-        pygame.display.flip()
-        clock.tick(constant.FPS)
 
-    pygame.quit()
+    app.run(frame)
     sys.exit(0)
 
 
@@ -99,7 +97,8 @@ def reset_all_scenes(
 if __name__ == "__main__":
     try:
         main()
+    except SystemExit:
+        raise
     except Exception as e:
         print(f"An error occurred: {e}")
-        pygame.quit()
         sys.exit(1)
