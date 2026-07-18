@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from enum import Enum
-import pygame
+from ..graphics import Surface
 from .. import constant
 
 
@@ -46,7 +46,7 @@ class Entity(ABC):
     @abstractmethod
     def draw(
         self,
-        screen: pygame.Surface
+        screen: Surface
     ) -> None:
         pass
 

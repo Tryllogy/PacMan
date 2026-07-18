@@ -1,4 +1,3 @@
-import pygame
 from collections.abc import Sequence
 from .entity import Direction, Entity
 from .sprite import SpriteSet, load_scaled
@@ -7,6 +6,7 @@ from .wall import Wall
 from .pacgum import Pacgum
 from .superpacgum import SuperPacgum
 from .score import Score
+from ..graphics import Surface, Rect, rotate, get_ticks
 from .. import constant
 
 
@@ -33,10 +33,10 @@ class Player(Entity):
         self.score: Score = score
         self.sprite_index: int = 0
         self.sprites: SpriteSet = self.get_sprites()
-        self.last_sprite_change_time: int = pygame.time.get_ticks()
+        self.last_sprite_change_time: int = get_ticks()
         self.direction: Direction = Direction.NONE
         self.next_direction: Direction = self.direction
-        self.hitbox: pygame.Rect
+        self.hitbox: Rect
         self.invincible: bool = False
 
     ROTATIONS: dict[Direction, int] = {
@@ -49,9 +49,9 @@ class Player(Entity):
 
     def draw(
         self,
-        screen: pygame.Surface
+        screen: Surface
     ) -> None:
-        sprite = pygame.transform.rotate(
+        sprite = rotate(
             self.sprites.get(Direction.RIGHT, self.sprite_index),
             self.ROTATIONS[self.direction]
         )
@@ -168,7 +168,7 @@ class Player(Entity):
     def update_sprite(
         self,
     ) -> None:
-        now: int = pygame.time.get_ticks()
+        now: int = get_ticks()
         if now - self.last_sprite_change_time >= \
                 constant.PLAYER_SPRITE_CHANGE_DELAY:
             self.last_sprite_change_time = now
@@ -181,7 +181,7 @@ class Player(Entity):
         pixel_y: int
     ) -> None:
         w, h = self.sprites.size(self.direction, self.sprite_index)
-        self.hitbox = pygame.Rect(
+        self.hitbox = Rect(
             pixel_x,
             pixel_y,
             w,

@@ -1,4 +1,4 @@
-import pygame
+from ..graphics import Surface, Rect
 from .. import constant
 
 
@@ -10,7 +10,7 @@ class SuperPacgum:
     ):
         self.pixel_x: int = pixel_x
         self.pixel_y: int = pixel_y
-        self.rect: pygame.Rect = pygame.Rect(
+        self.rect: Rect = Rect(
             self.pixel_x - constant.SUPERPACGUM_SIZE // 2,
             self.pixel_y - constant.SUPERPACGUM_SIZE // 2,
             constant.SUPERPACGUM_SIZE,
@@ -19,10 +19,9 @@ class SuperPacgum:
 
     def draw(
         self,
-        screen: pygame.Surface,
+        screen: Surface,
     ) -> None:
-        pygame.draw.circle(
-            screen,
+        screen.draw_circle(
             constant.SUPERPACGUM_COLOR,
             self.rect.center,
             self.rect.width // 2

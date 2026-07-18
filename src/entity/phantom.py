@@ -5,7 +5,7 @@ from .sprite import SpriteSet, load_scaled
 from enum import Enum
 from typing import Generator
 from ..utils import Converter
-import pygame
+from ..graphics import Surface, Rect, get_ticks
 from .. import constant
 
 
@@ -48,17 +48,17 @@ class Phantom(Entity):
         self.direction: Direction = Direction.LEFT
         self.sprites: SpriteSet
         self.dead_sprites: SpriteSet
-        self.scared_sprite: list[pygame.Surface]
+        self.scared_sprite: list[Surface]
         self.sprites, \
             self.dead_sprites, \
             self.scared_sprite = self.load_sprites()
         self.scared_sprite_index: int = 0
+        self.last_sprite_change_time: int = get_ticks()
         self.prev_cell: tuple[int, int] = cell
         self.cell: tuple[int, int] = cell
         self.next_cell: tuple[int, int] = cell
         self.spawn_cell: tuple[int, int] = cell
         self.path: list[tuple[int, int]] = []
-        pygame.time.set_timer(pygame.USEREVENT + 2, 1000)
         self.retreat_timer = constant.RETREAT_TIME
         self.respawn_timer: int = constant.RESPAWN_TIME
         self.update_hitbox(pixel_x, pixel_y)
@@ -76,7 +76,7 @@ class Phantom(Entity):
             return
         self.strategy = self.retreat_strategy
         self.retreat_timer = constant.RETREAT_TIME
-        self.last_sprite_change_time = pygame.time.get_ticks()
+        self.last_sprite_change_time = get_ticks()
 
     def set_spawn_strategy(self) -> None:
         self.strategy = self.spawn_strategy
@@ -103,7 +103,7 @@ class Phantom(Entity):
             pixel_y: int
     ) -> None:
         w, h = self.sprites.size(self.direction)
-        self.hitbox: pygame.Rect = pygame.Rect(
+        self.hitbox: Rect = Rect(
             pixel_x,
             pixel_y,
             w,
@@ -137,7 +137,7 @@ class Phantom(Entity):
 
     def load_sprites(
         self
-    ) -> tuple[SpriteSet, SpriteSet, list[pygame.Surface]]:
+    ) -> tuple[SpriteSet, SpriteSet, list[Surface]]:
         try:
             colored_sprites = SpriteSet({
                 Direction.UP: [load_scaled(f"{self.color}_ghost_top.png")],
@@ -173,10 +173,10 @@ class Phantom(Entity):
 
     def draw(
         self,
-        screen: pygame.Surface
+        screen: Surface
     ) -> None:
         if self.retreat:
-            now = pygame.time.get_ticks()
+            now = get_ticks()
             if (self.retreat_timer < 3 and
                     now - self.last_sprite_change_time >=
                     constant.GHOST_SPRITE_CHANGE_DELAY):

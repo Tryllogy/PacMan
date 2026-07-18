@@ -1,4 +1,4 @@
-import pygame
+from ..graphics import Surface, Rect
 from .. import constant
 
 
@@ -14,7 +14,7 @@ class Wall:
         self.pixel_y: int = pixel_y
         self.width: int = width
         self.height: int = height
-        self.rect: pygame.Rect = pygame.Rect(
+        self.rect: Rect = Rect(
             self.pixel_x,
             self.pixel_y,
             self.width,
@@ -23,10 +23,9 @@ class Wall:
 
     def draw(
         self,
-        screen: pygame.Surface,
+        screen: Surface,
     ) -> None:
-        pygame.draw.rect(
-            screen,
+        screen.draw_rect(
             constant.WALL_COLOR,
             self.rect,
         )
