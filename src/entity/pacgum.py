@@ -8,6 +8,7 @@ class Pacgum:
         pixel_x: int,
         pixel_y: int
     ):
+        """Create a pacgum centred on the given pixel coordinates."""
         self.pixel_x: int = pixel_x
         self.pixel_y: int = pixel_y
         self.rect: pygame.Rect = pygame.Rect(
@@ -21,6 +22,7 @@ class Pacgum:
         self,
         screen: pygame.Surface,
     ) -> None:
+        """Draw the pacgum as a filled circle onto ``screen``."""
         pygame.draw.circle(
             screen,
             constant.PACGUM_COLOR,

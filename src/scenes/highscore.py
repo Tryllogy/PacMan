@@ -12,6 +12,7 @@ class HighscoreScene(Scene):
         screen: pygame.Surface,
         filename: str,
     ) -> None:
+        """Build the highscore screen and load the scores from ``filename``."""
         super().__init__(screen)
         self.current_scene = GameState.HIGHSCORE.value
         self.base_scene = self.current_scene
@@ -31,16 +32,20 @@ class HighscoreScene(Scene):
     def retrieve_highscores(
         self
     ) -> None:
+        """Load highscores from the file, handling errors gracefully."""
         self.highscores: list[dict] = load_highscores(
             os.path.join(constant.SCORE_DIR, self.filename))
 
     def back_main(
         self
     ) -> str:
+        """Return to the main scene."""
         self.current_scene = GameState.MAIN.value
         return self.current_scene
 
     def handle_events(self, events: list[pygame.event.Event]) -> str:
+        """Handle events for the highscore scene, including back button and
+        ESC key."""
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.current_scene = GameState.MAIN.value
@@ -50,6 +55,7 @@ class HighscoreScene(Scene):
     def draw_highscores(
         self
     ) -> None:
+        """Render the top-10 scores, or a placeholder when there are none."""
         x, y = self.middle_screen
         if len(self.highscores) == 0:
             text = self.font.render(
@@ -72,11 +78,14 @@ class HighscoreScene(Scene):
     def draw(
         self,
     ) -> None:
+        """Draw the Back button and the highscore list."""
         self.back_button.draw(self.screen)
         self.draw_highscores()
 
     def update(
         self
     ) -> str:
+        """Reload the highscores each frame and return the scene key.
+        """
         self.retrieve_highscores()
         return self.current_scene

@@ -33,6 +33,7 @@ class Phantom(Entity):
             cell: tuple[int, int],
             conv: Converter
     ):
+        """Set up a ghost with its strategies, sprites and spawn cell."""
         super().__init__(pixel_x, pixel_y)
         if not isinstance(strategy, Strategy):
             raise TypeError(f"Not a valid strategy: {strategy}")
@@ -65,13 +66,17 @@ class Phantom(Entity):
 
     @property
     def retreat(self) -> bool:
+        """Whether the ghost is currently fleeing (edible)."""
         return isinstance(self.strategy, RetreatStrategy)
 
     @property
     def to_spawn(self) -> bool:
+        """Whether the ghost is currently heading back to its spawn."""
         return isinstance(self.strategy, ReturnToSpawnStrategy)
 
     def set_retreat_strategy(self) -> None:
+        """Switch the ghost to its fleeing behaviour (unless returning home).
+        """
         if self.to_spawn:
             return
         self.strategy = self.retreat_strategy
@@ -79,6 +84,8 @@ class Phantom(Entity):
         self.last_sprite_change_time = pygame.time.get_ticks()
 
     def set_spawn_strategy(self) -> None:
+        """Switch the ghost to its return-to-spawn behaviour after being eaten.
+        """
         self.strategy = self.spawn_strategy
         self.respawn_timer = constant.RESPAWN_TIME
 
@@ -86,11 +93,14 @@ class Phantom(Entity):
         self,
         path: list[tuple[int, int]]
     ) -> Generator[tuple[int, int], None, None]:
+        """Yield each cell of ``path`` one at a time."""
         for cell in path:
             yield cell
         return None
 
     def update_path(self, player_cell: tuple[int, int]) -> None:
+        """Recompute the path from the strategy and refresh the move generator.
+        """
         tmp = self.strategy.movement(self.cell, player_cell, self.prev_cell)
         if len(tmp) > 0 and tmp[0] == self.cell:
             tmp.pop(0)
@@ -102,6 +112,7 @@ class Phantom(Entity):
             pixel_x: int,
             pixel_y: int
     ) -> None:
+        """Rebuild the collision rectangle at the given pixel position."""
         w, h = self.sprites.size(self.direction)
         self.hitbox: pygame.Rect = pygame.Rect(
             pixel_x,
@@ -111,6 +122,7 @@ class Phantom(Entity):
         )
 
     def get_pixel_delta(self, delta: float) -> int:
+        """Return the unit step (-1, 0 or 1) matching the sign of ``delta``."""
         if delta > 0:
             return 1
         elif delta < 0:
@@ -119,6 +131,8 @@ class Phantom(Entity):
             return 0
 
     def move(self, player_cell: tuple[int, int]) -> None:
+        """Advance one pixel step toward the next cell, updating cells as
+        reached."""
         if self.next_cell == self.cell:
             self.update_path(player_cell)
             try:
@@ -138,6 +152,7 @@ class Phantom(Entity):
     def load_sprites(
         self
     ) -> tuple[SpriteSet, SpriteSet, list[pygame.Surface]]:
+        """Load and return the normal, dead and scared ghost sprite sets."""
         try:
             colored_sprites = SpriteSet({
                 Direction.UP: [load_scaled(f"{self.color}_ghost_top.png")],
@@ -175,6 +190,8 @@ class Phantom(Entity):
         self,
         screen: pygame.Surface
     ) -> None:
+        """Draw the ghost, picking scared/dead/normal sprites by current state.
+        """
         if self.retreat:
             now = pygame.time.get_ticks()
             if (self.retreat_timer < 3 and
@@ -197,18 +214,22 @@ class Phantom(Entity):
         self,
         player_cell: tuple[int, int]
     ) -> None:
+        """Refresh the hitbox, restore normal AI at spawn, then move."""
         self.update_hitbox(self.pixel_x, self.pixel_y)
         if self.to_spawn and self.cell == self.spawn_cell:
             self.strategy = self.original_strategy
         self.move(player_cell)
 
     def reset_strategy(self) -> None:
+        """Restore the ghost's original strategy and sprite frame."""
         self.strategy = self.original_strategy
         self.scared_sprite_index = 0
 
     def reset_position(
         self
     ) -> None:
+        """Send the ghost back to its spawn and reset its strategy/direction.
+        """
         self.pixel_x = self.spawn_pixel_x
         self.pixel_y = self.spawn_pixel_y
         self.cell = self.spawn_cell

@@ -12,6 +12,7 @@ class WinScene(EndScene):
         config: Data,
         score: Score
     ) -> None:
+        """Build the win screen with its green title and subtitle."""
         super().__init__(
             screen, config, score,
             GameState.WIN, "You Win!", (0, 255, 0),

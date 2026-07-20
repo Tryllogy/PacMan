@@ -18,6 +18,7 @@ class Scene(ABC):
             self,
             screen: pygame.Surface
     ) -> None:
+        """Set up the shared font, screen and scene-state attributes."""
         self.font: pygame.font.Font = pygame.font.Font(None, 40)
         self.screen: pygame.Surface = screen
         self.current_scene: str = ""
@@ -29,6 +30,7 @@ class Scene(ABC):
             self,
             screen: pygame.Surface
     ) -> tuple[int, int]:
+        """Compute and store the screen's centre point."""
         width: int = screen.get_width() // 2
         height: int = screen.get_height() // 2
         self.middle_screen = (width, height)
@@ -39,14 +41,18 @@ class Scene(ABC):
         self,
         events: list[pygame.event.Event]
     ) -> str:
+        """Handle input events and return the next scene's state key."""
         pass
 
     @abstractmethod
     def update(self) -> str:
+        """Advance the scene one frame and return the next scene's state key.
+        """
         pass
 
     @abstractmethod
     def draw(
         self,
     ) -> None:
+        """Render the scene onto its screen."""
         self.screen.fill((0, 0, 0))

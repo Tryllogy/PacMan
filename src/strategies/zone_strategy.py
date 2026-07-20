@@ -8,6 +8,7 @@ class ZoneStrategy(Strategy):
             map_grid: list[list[int]],
             name: str = "Zone"
     ) -> None:
+        """Create the zone-roaming strategy and pick its first zone."""
         super().__init__(map_grid=map_grid, name=name)
         self.zone: list[tuple[int, int]] = []
         self.possible_rows: list[int] = [
@@ -28,6 +29,8 @@ class ZoneStrategy(Strategy):
         player_cell: tuple[int, int],
         prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
+        """Path to a random remaining cell of the zone, refilling when empty.
+        """
         if len(self.zone) == 0:
             self.make_zone()
         goal_cell = random.choice(self.zone)
@@ -37,6 +40,7 @@ class ZoneStrategy(Strategy):
     def make_zone(
         self,
     ) -> None:
+        """Build a fresh rectangular patrol zone of open cells at random."""
         rows = random.sample(self.possible_rows, 2)
         cols = random.sample(self.possible_cols, 2)
         start_row, end_row = min(rows), max(rows)

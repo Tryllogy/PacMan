@@ -3,16 +3,23 @@ import sys
 
 
 def _project_root() -> str:
+    """Return the root of the project, which is the parent of
+    the directory containing this file.
+    """
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _bundle_dir() -> str:
+    """Return the directory containing the bundled executable,
+    or the project root if not bundled."""
     if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
         return str(sys._MEIPASS)
     return _project_root()
 
 
 def _data_dir() -> str:
+    """Return the directory containing the data files, which is the project
+    root if not bundled, or the parent of the executable if bundled."""
     if getattr(sys, "frozen", False):
         return os.path.dirname(os.path.abspath(sys.executable))
     return _project_root()

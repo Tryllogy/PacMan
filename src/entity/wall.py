@@ -10,6 +10,7 @@ class Wall:
         width: int,
         height: int,
     ) -> None:
+        """Create a wall rectangle at the given position and size."""
         self.pixel_x: int = pixel_x
         self.pixel_y: int = pixel_y
         self.width: int = width
@@ -25,6 +26,7 @@ class Wall:
         self,
         screen: pygame.Surface,
     ) -> None:
+        """Draw the wall as a filled rectangle onto ``screen``."""
         pygame.draw.rect(
             screen,
             constant.WALL_COLOR,

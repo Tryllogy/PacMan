@@ -26,6 +26,7 @@ class InGameScene(Scene):
         config: Data,
         score: Score
     ) -> None:
+        """Build the first level: maze, walls, pacgums, ghosts and player."""
         super().__init__(screen)
         self.config: Data = config
         self.points_per_pacgum: int = config.points_per_pacgum
@@ -55,6 +56,7 @@ class InGameScene(Scene):
     def update(
         self
     ) -> str:
+        """Advance ghosts and player, then check for loss or level clear."""
         for phantom in self.phantoms:
             player_cell = self.converter.pixel_to_cell(
                 (self.player.pixel_x, self.player.pixel_y))
@@ -70,6 +72,7 @@ class InGameScene(Scene):
         return self.current_scene
 
     def init_converter(self) -> None:
+        """Create the cell/pixel converter for the current maze size."""
         maze_rows = len(self.maze_gen.maze)
         maze_cols = len(self.maze_gen.maze[0])
         self.converter = Converter(
@@ -80,6 +83,7 @@ class InGameScene(Scene):
     def new_level(
         self
     ) -> None:
+        """Advance to the next level, or win after the last one."""
         self.level_index += 1
         if self.level_index >= len(self.config.levels):
             self.current_scene = GameState.WIN.value
@@ -101,6 +105,7 @@ class InGameScene(Scene):
         self,
         events: list[pygame.event.Event]
     ) -> str:
+        """Handle the timer, movement keys, cheats and ghost state timers."""
         for event in events:
             if event.type == pygame.USEREVENT + 1:
                 if self.timer > 0:
@@ -142,6 +147,7 @@ class InGameScene(Scene):
     def draw(
         self,
     ) -> None:
+        """Draw the maze, entities and the score/lives/level/time HUD."""
         super().draw()
         for wall in self.walls:
             wall.draw(self.screen)
@@ -160,6 +166,7 @@ class InGameScene(Scene):
     def generate_maze(
         self
     ) -> None:
+        """Generate a new random maze sized for the current level."""
         self.maze_gen = MazeGenerator(
             (self.config.levels[self.level_index].width,
                 self.config.levels[self.level_index].height),
@@ -169,6 +176,7 @@ class InGameScene(Scene):
     def draw_timer(
         self,
     ) -> None:
+        """Draw the remaining level time in the HUD."""
         timer_text = self.font.render(f"Time: {self.timer}",
                                       True, (255, 255, 255))
         self.screen.blit(timer_text, (10, 130))
@@ -176,6 +184,7 @@ class InGameScene(Scene):
     def draw_score(
         self
     ) -> None:
+        """Draw the current score in the HUD."""
         score_text = self.font.render(f"Score: {self.score.score}",
                                       True, (255, 255, 255))
         self.screen.blit(score_text, (10, 10))
@@ -183,6 +192,7 @@ class InGameScene(Scene):
     def draw_lives(
         self
     ) -> None:
+        """Draw the player's remaining lives in the HUD."""
         lives_text = self.font.render(f"Lives: {self.player.lives}",
                                       True, (255, 255, 255))
         self.screen.blit(lives_text, (10, 50))
@@ -190,6 +200,7 @@ class InGameScene(Scene):
     def draw_level(
         self
     ) -> None:
+        """Draw the current level's name in the HUD."""
         level_text = self.font.render(
             f"{self.config.levels[self.level_index].name}",
             True, (255, 255, 255))
@@ -198,6 +209,7 @@ class InGameScene(Scene):
     def get_offset(
         self
     ) -> tuple[int, int]:
+        """Compute the maze pixel size and its top-left origin on screen."""
         maze_height_px = len(self.maze_gen.maze) * constant.WALL_HEIGHT
         maze_width_px = len(self.maze_gen.maze[0]) * constant.WALL_HEIGHT
         self.maze_size_px: tuple[int, int] = (maze_height_px, maze_width_px)
@@ -210,6 +222,10 @@ class InGameScene(Scene):
     def find_open_middle_maze(
         self
     ) -> tuple[int, int]:
+        """Return the open cell nearest the maze centre for spawning.
+
+        Raises ``ValueError`` if the maze has no open cell at all.
+        """
         middle_row: int = math.ceil(len(self.maze_gen.maze) / 2) - 1
         middle_col: int = math.ceil(len(self.maze_gen.maze[0]) / 2) - 1
         while self.maze_gen.maze[middle_row][middle_col] == 15:
@@ -225,6 +241,7 @@ class InGameScene(Scene):
         self,
         lives: int,
     ) -> None:
+        """Create the player at the maze centre with the given lives."""
         middle_row, middle_col = self.find_open_middle_maze()
         offset_player: int = int(constant.WALL_WIDTH * 1.3)
 
@@ -245,6 +262,7 @@ class InGameScene(Scene):
     def make_pacgum(
         self
     ) -> None:
+        """Fill open cells with pacgums; corners get super-pacgums."""
         middle_row, middle_col = self.find_open_middle_maze()
         offset_pacgum: int = int(
             constant.WALL_HEIGHT / 2 + constant.WALL_WIDTH / 2)
@@ -267,6 +285,7 @@ class InGameScene(Scene):
                     ))
 
     def make_phantom(self) -> None:
+        """Spawn the four ghosts in the corners with their strategies."""
         offset_phantom: int = int(constant.WALL_WIDTH * 1.3)
         maze_height_px, maze_width_px = self.maze_size_px
         maze_height_px -= constant.WALL_HEIGHT
@@ -309,6 +328,7 @@ class InGameScene(Scene):
     def make_wall(
         self
     ) -> None:
+        """Build wall segments for every cell from its wall bitmask."""
         for row, line in enumerate(self.maze_gen.maze):
             for col, value in enumerate(line):
                 cell: tuple[int, int] = (row, col)
@@ -325,6 +345,7 @@ class InGameScene(Scene):
         self,
         cell: tuple[int, int],
     ) -> None:
+        """Add the north (top) wall segment of ``cell``."""
         pixel_x: int = cell[1] * constant.WALL_HEIGHT
         pixel_y: int = cell[0] * constant.WALL_HEIGHT
         self.walls.append(Wall(
@@ -338,6 +359,7 @@ class InGameScene(Scene):
         self,
         cell: tuple[int, int]
     ) -> None:
+        """Add the south (bottom) wall segment of ``cell``."""
         offset: int = constant.WALL_HEIGHT
         pixel_x: int = cell[1] * constant.WALL_HEIGHT
         pixel_y: int = cell[0] * constant.WALL_HEIGHT + offset
@@ -352,6 +374,7 @@ class InGameScene(Scene):
         self,
         cell: tuple[int, int]
     ) -> None:
+        """Add the east (right) wall segment of ``cell``."""
         offset: int = constant.WALL_HEIGHT
         pixel_x: int = cell[1] * constant.WALL_HEIGHT + offset
         pixel_y: int = cell[0] * constant.WALL_HEIGHT
@@ -366,6 +389,7 @@ class InGameScene(Scene):
         self,
         cell: tuple[int, int]
     ) -> None:
+        """Add the west (left) wall segment of ``cell``."""
         pixel_x: int = cell[1] * constant.WALL_HEIGHT
         pixel_y: int = cell[0] * constant.WALL_HEIGHT
         self.walls.append(Wall(
@@ -380,6 +404,7 @@ class InGameScene(Scene):
         row: int,
         col: int
     ) -> bool:
+        """Return whether ``(row, col)`` is one of the maze's four corners."""
         last_row = len(self.maze_gen.maze) - 1
         last_col = len(self.maze_gen.maze[0]) - 1
         if row == 0 and col == 0:

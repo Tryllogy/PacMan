@@ -6,6 +6,7 @@ from .. import constant
 
 class Score:
     def __init__(self) -> None:
+        """Initialise the score counter at zero."""
         self.score: int = 0
 
 
@@ -14,6 +15,22 @@ def sanitize_name_char(char: str) -> str:
     if len(char) == 1 and (char.isalnum() or char == " "):
         return char
     return ""
+
+
+def _reset_highscore_file(file_path: str) -> None:
+    """Best-effort reset of the highscore file to an empty list.
+
+    Any filesystem error (missing/unwritable directory, permissions) is
+    swallowed so loading stays crash-free.
+    """
+    try:
+        directory = os.path.dirname(file_path)
+        if directory:
+            os.makedirs(directory, exist_ok=True)
+        with open(file_path, "w") as f:
+            json.dump([], f)
+    except OSError:
+        pass
 
 
 def load_highscores(file_path: str) -> list[dict[str, Any]]:
@@ -26,9 +43,7 @@ def load_highscores(file_path: str) -> list[dict[str, Any]]:
     if not os.path.exists(file_path):
         print(f"Highscore file {file_path} does not exist, returning "
               "empty list.")
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w") as f:
-            json.dump([], f)
+        _reset_highscore_file(file_path)
         return []
     try:
         with open(file_path, "r") as f:
@@ -36,17 +51,12 @@ def load_highscores(file_path: str) -> list[dict[str, Any]]:
     except (json.JSONDecodeError, ValueError, OSError):
         print(f"Error occurred while loading highscore file {file_path}, "
               "returning empty list.")
-        os.remove(file_path)
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w") as f:
-            json.dump([], f)
+        _reset_highscore_file(file_path)
         return []
     if not isinstance(raw, list):
         print(f"Highscore file {file_path} does not contain a list,"
               " returning empty list.")
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w") as f:
-            json.dump([], f)
+        _reset_highscore_file(file_path)
         return []
     scores: list[dict[str, Any]] = []
     for entry in raw:

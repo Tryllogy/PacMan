@@ -8,6 +8,7 @@ class SuperPacgum:
         pixel_x: int,
         pixel_y: int
     ):
+        """Create a super-pacgum centred on the given pixel coordinates."""
         self.pixel_x: int = pixel_x
         self.pixel_y: int = pixel_y
         self.rect: pygame.Rect = pygame.Rect(
@@ -21,6 +22,7 @@ class SuperPacgum:
         self,
         screen: pygame.Surface,
     ) -> None:
+        """Draw the super-pacgum as a filled circle onto ``screen``."""
         pygame.draw.circle(
             screen,
             constant.SUPERPACGUM_COLOR,

@@ -9,6 +9,7 @@ class Strategy(ABC):
             map_grid: list[list[int]],
             name: str
     ):
+        """Store the maze grid and the strategy's display name."""
         self.name: str = name
         self.map_grid: list[list[int]] = map_grid
 
@@ -17,6 +18,8 @@ class Strategy(ABC):
         phantom_cell: tuple[int, int],
         goal_cell: tuple[int, int]
     ) -> list[tuple[int, int]]:
+        """Return the A* shortest path from ``phantom_cell`` to ``goal_cell``.
+        """
         start = phantom_cell
         goal = goal_cell
         open_heap: list[tuple[float, tuple[int, int]]] = []
@@ -45,6 +48,7 @@ class Strategy(ABC):
             tuple[int, int],
             tuple[int, int]]
     ) -> list[tuple[int, int]]:
+        """Rebuild the ordered path by walking the ``parents`` chain back."""
         result: list[tuple[int, int]] = []
         tmp = cell
         while tmp in parents:
@@ -58,6 +62,7 @@ class Strategy(ABC):
         cell: tuple[int, int],
         map_maze: list[list[int]]
     ) -> list[tuple[int, int]]:
+        """Return the neighbouring cells reachable from ``cell`` (no wall)."""
         result = []
         row, col = cell
         value = format(map_maze[row][col], '04b')
@@ -75,6 +80,7 @@ class Strategy(ABC):
         self,
         cell: tuple[int, int]
     ) -> float:
+        """Return the step cost of ``cell``, favouring more open corridors."""
         row, col = cell
         value = format(self.map_grid[row][col], '04b')
         n_wall = sum([int(c) for c in value])
@@ -91,6 +97,7 @@ class Strategy(ABC):
         start_cell: tuple[int, int],
         spawn_cell: tuple[int, int]
     ) -> list[tuple[int, int]]:
+        """Return the path from ``start_cell`` back to ``spawn_cell``."""
         return self.get_path(start_cell, spawn_cell)
 
     @abstractmethod
@@ -100,4 +107,5 @@ class Strategy(ABC):
         player_cell: tuple[int, int],
         prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
+        """Return the ghost's next path for this frame (subclass-specific)."""
         pass

@@ -12,6 +12,7 @@ class LoseScene(EndScene):
         config: Data,
         score: Score
     ) -> None:
+        """Build the lose screen with its red title."""
         super().__init__(
             screen, config, score,
             GameState.LOSE, "You Lose!", (255, 0, 0))

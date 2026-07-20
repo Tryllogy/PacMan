@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 def main() -> None:
+    """Validate the CLI argument, load the config, and run the game loop."""
     if len(sys.argv) == 1:
         print("Missing args")
         sys.exit(1)
@@ -39,6 +40,7 @@ def main() -> None:
     score: Score = Score()
 
     def new_game_scene() -> InGameScene:
+        """Build a fresh in-game scene with a new maze and a reset score."""
         maze_gen: MazeGenerator = MazeGenerator(
             (config.levels[0].width, config.levels[0].height),
             perfect=False,
@@ -92,6 +94,7 @@ def main() -> None:
 def reset_all_scenes(
     scenes: dict[str, Scene]
 ) -> None:
+    """Reset every scene back to its base sub-scene after a frame."""
     for k, scene in scenes.items():
         scene.current_scene = scene.base_scene
 

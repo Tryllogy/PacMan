@@ -8,6 +8,7 @@ class ReturnToSpawnStrategy(Strategy):
         phantom_cell: tuple[int, int],
         name: str = "Spawn"
     ) -> None:
+        """Create the return-to-spawn strategy targeting ``phantom_cell``."""
         super().__init__(map_grid=map_grid, name=name)
         self.target_cell: tuple[int, int] = phantom_cell
         self.path: list[tuple[int, int]] = []
@@ -18,4 +19,5 @@ class ReturnToSpawnStrategy(Strategy):
         player_cell: tuple[int, int],
         prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
+        """Return the A* path back to the ghost's spawn cell."""
         return self.get_path(phantom_cell, self.target_cell)

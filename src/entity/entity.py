@@ -17,6 +17,11 @@ class Direction(Enum):
         start_cell: tuple[int, int],
         end_cell: tuple[int, int]
     ) -> "Direction":
+        """Return the direction to step from ``start_cell`` to ``end_cell``.
+
+        Horizontal moves take priority over vertical ones; identical cells
+        yield :attr:`Direction.NONE`.
+        """
         d_row = end_cell[0] - start_cell[0]
         d_col = end_cell[1] - start_cell[1]
         if d_col > 0:
@@ -36,6 +41,7 @@ class Entity(ABC):
         pixel_x: int,
         pixel_y: int
     ) -> None:
+        """Store the entity's current, spawn and origin pixel positions."""
         self.pixel_x: int = pixel_x
         self.pixel_y: int = pixel_y
         self.spawn_pixel_x: int = pixel_x
@@ -48,11 +54,13 @@ class Entity(ABC):
         self,
         screen: pygame.Surface
     ) -> None:
+        """Draw the entity onto ``screen`` (implemented by subclasses)."""
         pass
 
     def is_aligned(
             self,
     ) -> bool:
+        """Return whether the entity sits exactly on the maze grid."""
         return (
             (self.pixel_x - self.origin_pixel_x) % constant.WALL_HEIGHT == 0
             and (self.pixel_y - self.origin_pixel_y) %

@@ -26,6 +26,8 @@ class EndScene(Scene):
         title_color: tuple[int, int, int],
         subtitle: str = "",
     ) -> None:
+        """Set up the end screen's title, optional subtitle, score and config.
+        """
         super().__init__(screen)
         self.current_scene = state.value
         self.base_scene = self.current_scene
@@ -45,6 +47,8 @@ class EndScene(Scene):
     def write_name_to_file(
         self
     ) -> bool:
+        """Persist the entered name and score; return ``False`` if name
+        is blank."""
         if len(self.name_user.strip()) == 0:
             return False
         file_path = os.path.join(constant.SCORE_DIR,
@@ -56,6 +60,7 @@ class EndScene(Scene):
     def draw_name_user_text(
         self
     ) -> None:
+        """Render the name-entry prompt with the text typed so far."""
         self.name_user_text = self.font.render(
             f"Enter your name: {self.name_user}", True, (255, 255, 255))
         self.name_user_text_rect = self.name_user_text.get_rect(
@@ -66,6 +71,7 @@ class EndScene(Scene):
         self,
         events: list[pygame.event.Event]
     ) -> str:
+        """Handle name typing; ``Enter`` saves the score, ``Esc`` quits."""
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
@@ -87,6 +93,7 @@ class EndScene(Scene):
     def draw(
         self,
     ) -> None:
+        """Draw the title, optional subtitle, final score and name prompt."""
         super().draw()
         self.screen.blit(self.title_text, self.title_text_rect)
         if self.subtitle_text is not None:
@@ -101,4 +108,5 @@ class EndScene(Scene):
     def update(
         self
     ) -> str:
+        """Return the current scene key (the end screen is static)."""
         return self.current_scene

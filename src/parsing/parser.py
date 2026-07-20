@@ -20,6 +20,7 @@ class ErrorParsing(Exception):
     """Raised when the configuration file cannot be parsed."""
 
     def __init__(self, *args: str) -> None:
+        """Forward the error message(s) to the base ``Exception``."""
         super().__init__(*args)
 
 

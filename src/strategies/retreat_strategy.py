@@ -8,6 +8,7 @@ class RetreatStrategy(Strategy):
         map_grid: list[list[int]],
         name: str = "Retreat"
     ) -> None:
+        """Create the retreat (flee-the-player) strategy for a maze."""
         super().__init__(map_grid=map_grid, name=name)
 
     def build_path(
@@ -17,6 +18,7 @@ class RetreatStrategy(Strategy):
             tuple[int, int],
             tuple[int, int]]
     ) -> list[tuple[int, int]]:
+        """Rebuild the path forward from ``cell`` using reversed parents."""
         result = [cell]
         tmp = cell
         rev_parents = {v: k for k, v in parents.items()}
@@ -31,6 +33,8 @@ class RetreatStrategy(Strategy):
         current_cell: tuple[int, int],
         player_cell: tuple[int, int]
     ) -> bool:
+        """Return whether ``current_cell`` lies outside the start-player box.
+        """
         start_row, start_col = start_cell
         curr_row, curr_col = current_cell
         play_row, play_col = player_cell
@@ -50,6 +54,7 @@ class RetreatStrategy(Strategy):
         player_cell: tuple[int, int],
         prev_phantom_cell: tuple[int, int] | None
     ) -> list[tuple[int, int]]:
+        """Pick one neighbour away from the player, avoiding backtracking."""
         lst_adj = self.get_adj(phantom_cell, self.map_grid)
         for adj in lst_adj:
             if self.is_away(phantom_cell, adj, player_cell):
@@ -66,4 +71,5 @@ class RetreatStrategy(Strategy):
         player_cell: tuple[int, int],
         prev_phantom_cell: tuple[int, int] | None = None
     ) -> list[tuple[int, int]]:
+        """Return the next single step fleeing away from the player."""
         return self.retreat_step(phantom_cell, player_cell, prev_phantom_cell)

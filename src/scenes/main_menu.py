@@ -19,6 +19,8 @@ class MainScene(Scene):
         self,
         screen: pygame.Surface
     ) -> None:
+        """Build the main menu with its Play/Highscore/Instructions/Exit
+        buttons."""
         super().__init__(screen)
         self.current_scene = GameState.MAIN.value
         self.base_scene = self.current_scene
@@ -65,6 +67,7 @@ class MainScene(Scene):
         )
 
     def exit_program(self) -> None:
+        """Quit pygame and exit the program."""
         import pygame
         import sys
         pygame.quit()
@@ -73,18 +76,21 @@ class MainScene(Scene):
     def view_instructions(
         self
     ) -> str:
+        """Switch to the instructions scene."""
         self.current_scene = GameState.INSTRUCTIONS.value
         return self.current_scene
 
     def view_highscore(
         self
     ) -> str:
+        """Switch to the highscore scene."""
         self.current_scene = GameState.HIGHSCORE.value
         return self.current_scene
 
     def start_game(
         self,
     ) -> str:
+        """Switch to the in-game scene."""
         self.current_scene = GameState.GAME.value
         return self.current_scene
 
@@ -92,6 +98,7 @@ class MainScene(Scene):
         self,
         events: list[pygame.event.Event]
     ) -> str:
+        """Dispatch events to the buttons; ``Esc`` quits the game."""
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 pygame.quit()
@@ -106,6 +113,7 @@ class MainScene(Scene):
     def draw(
         self,
     ) -> None:
+        """Draw the menu background and all four buttons."""
         super().draw()
         self.play_button.draw(self.screen)
         self.high_score_button.draw(self.screen)
@@ -115,4 +123,5 @@ class MainScene(Scene):
     def update(
         self
     ) -> str:
+        """Return the current scene key (the menu has no per-frame logic)."""
         return self.current_scene

@@ -23,6 +23,7 @@ class Player(Entity):
         points_per_super_pacgum: int = 5,
         points_per_ghost: int = 10,
     ) -> None:
+        """Set up Pac-Man's position, lives, scoring rules and sprites."""
         super().__init__(pixel_x, pixel_y)
         self.origin_pixel_x: int = origin_pixel_x
         self.origin_pixel_y: int = origin_pixel_y
@@ -51,6 +52,7 @@ class Player(Entity):
         self,
         screen: pygame.Surface
     ) -> None:
+        """Draw Pac-Man, rotating the base sprite to face its direction."""
         sprite = pygame.transform.rotate(
             self.sprites.get(Direction.RIGHT, self.sprite_index),
             self.ROTATIONS[self.direction]
@@ -60,6 +62,7 @@ class Player(Entity):
     def get_sprites(
         self
     ) -> SpriteSet:
+        """Load and return Pac-Man's animated mouth sprite set."""
         return SpriteSet({
             Direction.RIGHT: [
                 load_scaled("pacman_1.png"),
@@ -74,6 +77,8 @@ class Player(Entity):
         pixel_y: int,
         entities: Sequence[Wall | Pacgum | SuperPacgum]
     ) -> tuple[bool, Wall | Pacgum | SuperPacgum | None]:
+        """Return the first entity colliding with Pac-Man at the given pixel.
+        """
         self.update_hitbox(pixel_x, pixel_y)
         for entity in entities:
             if self.hitbox.colliderect(entity.rect):
@@ -86,6 +91,8 @@ class Player(Entity):
         pixel_y: int,
         phantoms: list[Phantom]
     ) -> tuple[bool, Phantom | None]:
+        """Return a colliding ghost, ignoring spawning ghosts and
+        invincibility."""
         if self.invincible:
             return False, None
         for phantom in phantoms:
@@ -100,6 +107,8 @@ class Player(Entity):
         walls: list[Wall],
         direction: Direction
     ) -> bool:
+        """Return whether Pac-Man can step in ``direction`` without hitting
+        a wall."""
         d_pixel_x, d_pixel_y = {
             Direction.UP: (0, -constant.PLAYER_SPEED),
             Direction.DOWN: (0, constant.PLAYER_SPEED),
@@ -118,6 +127,8 @@ class Player(Entity):
         super_pacgums: list[SuperPacgum] = [],
         phantoms: list[Phantom] = []
     ) -> None:
+        """Move Pac-Man and resolve eating pacgums, super-pacgums and ghosts.
+        """
         if self.is_aligned() and self.can_move(walls, self.next_direction):
             self.direction = self.next_direction
         if self.can_move(walls, self.direction):
@@ -159,6 +170,7 @@ class Player(Entity):
     def reset_positions(
         self,
     ) -> None:
+        """Send Pac-Man back to spawn and clear its movement state."""
         self.pixel_x = self.spawn_pixel_x
         self.pixel_y = self.spawn_pixel_y
         self.direction = Direction.NONE
@@ -168,6 +180,7 @@ class Player(Entity):
     def update_sprite(
         self,
     ) -> None:
+        """Advance the mouth animation frame once the delay has elapsed."""
         now: int = pygame.time.get_ticks()
         if now - self.last_sprite_change_time >= \
                 constant.PLAYER_SPRITE_CHANGE_DELAY:
@@ -180,6 +193,8 @@ class Player(Entity):
         pixel_x: int,
         pixel_y: int
     ) -> None:
+        """Rebuild Pac-Man's collision rectangle at the given pixel position.
+        """
         w, h = self.sprites.size(self.direction, self.sprite_index)
         self.hitbox = pygame.Rect(
             pixel_x,

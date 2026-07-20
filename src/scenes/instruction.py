@@ -9,6 +9,7 @@ class InstructionsScene(Scene):
         self,
         screen: pygame.Surface
     ) -> None:
+        """Build the instructions screen text and its Back button."""
         super().__init__(screen)
         self.current_scene = GameState.INSTRUCTIONS.value
         self.base_scene = self.current_scene
@@ -40,10 +41,12 @@ class InstructionsScene(Scene):
     def back_main(
             self
     ) -> str:
+        """Switch back to the main menu."""
         self.current_scene = GameState.MAIN.value
         return self.current_scene
 
     def handle_events(self, events: list[pygame.event.Event]) -> str:
+        """Dispatch events to the Back button; ``Esc`` returns to the menu."""
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 self.current_scene = GameState.MAIN.value
@@ -53,17 +56,20 @@ class InstructionsScene(Scene):
     def draw(
         self,
     ) -> None:
+        """Draw the Back button and the instructions text."""
         self.back_button.draw(self.screen)
         self.draw_instructions()
 
     def update(
         self
     ) -> str:
+        """Return the current scene key (the screen is static)."""
         return self.current_scene
 
     def draw_instructions(
         self
     ) -> None:
+        """Blit each instruction line centred on the screen."""
         x, y = self.middle_screen
         for i, surface in enumerate(self.instructions_surfaces):
             text_rect = surface.get_rect(center=(x, y - 100 + i * 40))

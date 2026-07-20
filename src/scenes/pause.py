@@ -5,6 +5,7 @@ from .button import Button
 
 class PauseScene(Scene):
     def __init__(self, screen: pygame.Surface) -> None:
+        """Build the pause overlay with its text and menu/exit buttons."""
         super().__init__(screen)
         self.current_scene = GameState.PAUSE.value
         self.base_scene = self.current_scene
@@ -36,6 +37,7 @@ class PauseScene(Scene):
         )
 
     def handle_events(self, events: list[pygame.event.Event]) -> str:
+        """Dispatch events to the buttons; ``Esc`` resumes the game."""
         for event in events:
             self.main_menu_button.handle_event(event)
             self.exit_button.handle_event(event)
@@ -46,12 +48,14 @@ class PauseScene(Scene):
     def back_to_menu(
             self
     ) -> str:
+        """Switch back to the main menu."""
         self.current_scene = GameState.MAIN.value
         return self.current_scene
 
     def exit_program(
             self
     ) -> None:
+        """Quit pygame and exit the program."""
         import pygame
         import sys
         pygame.quit()
@@ -60,6 +64,7 @@ class PauseScene(Scene):
     def draw(
         self,
     ) -> None:
+        """Draw the pause text and the menu/exit buttons."""
         super().draw()
         self.screen.blit(self.pause_text, self.pause_text_rect)
         self.main_menu_button.draw(self.screen)
@@ -68,4 +73,5 @@ class PauseScene(Scene):
     def update(
         self
     ) -> str:
+        """Return the current scene key (the pause screen is static)."""
         return self.current_scene
