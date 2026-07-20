@@ -50,7 +50,8 @@ class Data(BaseModel):
 
     @model_validator(mode='after')
     def filename_validator(self) -> 'Data':
-        """Force 'highscore_filename' back to the default if it isn't a .json."""
+        """Force 'highscore_filename' back to the default if it isn't a .json.
+        """
         if not self.highscore_filename.endswith('.json'):
             print(
                 "Config: 'highscore_filename' is not a .json file "
@@ -97,7 +98,8 @@ class Parser():
         return json5.loads(result, object_pairs_hook=self._dedup)
 
     def get_data(self) -> Data:
-        """Return the validated config, unwrapping a list-wrapped root object."""
+        """Return the validated config, unwrapping a list-wrapped root object.
+        """
         raw = self.data
         if isinstance(raw, list):
             raw = raw[0] if raw else {}
@@ -139,8 +141,8 @@ class Parser():
         """Drop the value flagged by one pydantic error; return whether it did.
 
         Locates the offending field from the error's ``loc`` path and removes
-        it (or the invalid level) so its default applies. Returns ``False`` when
-        nothing could be repaired, letting the caller give up.
+        it (or the invalid level) so its default applies. Returns ``False``
+        when nothing could be repaired, letting the caller give up.
         """
         loc = list(err.get('loc', ()))
         msg = err.get('msg', 'invalid value')

@@ -26,6 +26,9 @@ def load_highscores(file_path: str) -> list[dict[str, Any]]:
     if not os.path.exists(file_path):
         print(f"Highscore file {file_path} does not exist, returning "
               "empty list.")
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w") as f:
+            json.dump([], f)
         return []
     try:
         with open(file_path, "r") as f:
@@ -33,10 +36,17 @@ def load_highscores(file_path: str) -> list[dict[str, Any]]:
     except (json.JSONDecodeError, ValueError, OSError):
         print(f"Error occurred while loading highscore file {file_path}, "
               "returning empty list.")
+        os.remove(file_path)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w") as f:
+            json.dump([], f)
         return []
     if not isinstance(raw, list):
         print(f"Highscore file {file_path} does not contain a list,"
               " returning empty list.")
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w") as f:
+            json.dump([], f)
         return []
     scores: list[dict[str, Any]] = []
     for entry in raw:
