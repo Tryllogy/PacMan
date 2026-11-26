@@ -1,7 +1,7 @@
 import copy
 import json5
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Iterable, Mapping
 from pydantic import BaseModel, Field, ValidationError, model_validator
 
 DEFAULT_CONFIG = {
@@ -173,7 +173,7 @@ class Parser():
             return True
         return False
 
-    def _dedup(self, pairs: list[tuple[str, Any]]) -> dict:
+    def _dedup(self, pairs: Iterable[tuple[str, Any]]) -> dict:
         """Drop duplicate keys from every object so defaults apply.
 
         Called by ``json5.loads`` for each JSON object (nested ones too). A key
@@ -182,6 +182,7 @@ class Parser():
         recorded in ``self.duplicate_keys`` for reporting; duplicates inside
         nested objects (e.g. a level) are dropped silently.
         """
+        pairs = list(pairs)  # iterated twice below
         counts: dict[str, int] = {}
         for key, _ in pairs:
             counts[key] = counts.get(key, 0) + 1
